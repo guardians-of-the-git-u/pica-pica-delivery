@@ -40,6 +40,30 @@
                 <div id="menu-container" class="cards-grid">
                     </div>
             </section>
+            <section id="add-dish-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
+    <h2 class="section-title" style="margin-bottom:15px;">Añadir Nuevo Plato</h2>
+    <form id="add-dish-form" style="display:grid; gap:12px;">
+        <input id="dish-name" type="text" placeholder="Nombre del plato (ej. Sopa de Maní)" required 
+               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        
+        <input id="dish-category" type="text" placeholder="Categoría (ej. Almuerzo, Postre)" required 
+               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        
+        <input id="dish-price" type="number" placeholder="Precio en Bs" required 
+               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        
+        <input id="dish-img-url" type="url" placeholder="URL de la foto (https://...)" required 
+               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        
+        <textarea id="dish-desc" placeholder="Descripción breve" rows="2" 
+                  style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;"></textarea>
+
+        <button type="submit" class="btn-primary" style="background-color: var(--color-action);">
+            🚀 Publicar Plato
+        </button>
+        <p id="add-dish-feedback" class="text-muted" style="text-align:center; min-height:1.2rem;"></p>
+    </form>
+</section>
 
             <section id="subscription-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 80px;">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">

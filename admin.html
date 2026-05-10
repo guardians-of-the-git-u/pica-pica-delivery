@@ -1,1 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pica-Pica Delivery | Vecinos</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <p class="app-header__greeting">¡Hola, vecino!</p>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h1 class="app-header__title">Pica-Pica Delivery</h1>
+                <div style="width:40px; height:40px; border-radius:12px; overflow:hidden; background:#fff;">
+                    <img src="assets/image.png" alt="Logo" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/40'">
+                </div>
+            </div>
 
+            <div class="search-bar">
+                <span style="font-size:1.2rem;">🔍</span>
+                <input type="text" class="search-bar__input" placeholder="¿Qué quieres almorzar hoy?">
+            </div>
+        </header>
+
+        <main class="px-page py-2">
+            <section class="mb-3">
+                <div class="section-header">
+                    <h2 class="section-title">Categorías</h2>
+                </div>
+                <div id="category-buttons" class="chip-list">
+                    </div>
+            </section>
+
+            <section class="mb-3">
+                <div class="section-header">
+                    <h2 class="section-title">Menú de la Caserita</h2>
+                    <span class="section-link">Ver todo</span>
+                </div>
+                <div id="menu-container" class="cards-grid">
+                    </div>
+            </section>
+
+            <section id="subscription-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 80px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                    <span style="font-size:1.5rem;">📅</span>
+                    <h2 class="section-title" style="margin:0;">Suscripción Semanal</h2>
+                </div>
+                <p class="text-muted" style="margin-bottom:15px;">Ahorra tiempo y dinero recibiendo tus almuerzos de lunes a viernes.</p>
+
+                <form id="subscription-form" style="display:grid; gap:12px;">
+                    <input id="subscription-name" type="text" placeholder="Tu nombre completo" required 
+                           style="width:100%; padding:14px; border:1.5px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;">
+                    
+                    <button type="submit" class="btn-primary">
+                        Confirmar Plan Semanal
+                    </button>
+                    <p id="subscription-feedback" class="text-muted" style="text-align:center; min-height:1.2rem;"></p>
+                </form>
+            </section>
+        </main>
+
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-item active">
+                <span class="nav-item__icon">🏠</span>
+                <span>Inicio</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-item__icon">🥘</span>
+                <span>Mis Pedidos</span>
+            </a>
+            <a href="admin.html" class="nav-item">
+                <span class="nav-item__icon">👩‍🍳</span>
+                <span>Soy Caserita</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

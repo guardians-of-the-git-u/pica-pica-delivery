@@ -10,6 +10,7 @@ const API_URL = "https://sheetdb.io/api/v1/iqzxj7h81qhi5";
 // MENÚ
 // =====================
 let usuarioLogueado = null; // Guardará el nombre si tiene suscripción
+let suscripcionActual = null; // Guardará datos de la suscripción activa
 
 // 1. Función para verificar si el usuario es suscriptor
 async function verificarYActivarModo() {
@@ -28,19 +29,20 @@ async function verificarYActivarModo() {
         );
 
         if (esSuscriptor) {
-            // --- MODIFICADO: Verificar que la suscripción esté Activa ---
+            usuarioLogueado = esSuscriptor.Nombre_vecino;
+            suscripcionActual = esSuscriptor;
+
             if (esSuscriptor.Estado_Suscripcion === "Pausado") {
-                usuarioLogueado = null;
-                msg.textContent = "⏸️ Tu suscripción está pausada. Contacta soporte para reactivarla.";
+                msg.textContent = "⏸️ Tu suscripción está pausada. Puedes reanudarla desde Mi Cuenta.";
                 msg.style.color = "#e67e22";
-                renderMenu(menuData);
-                return;
+            } else {
+                msg.textContent = `✅ Plan Semanal Activo. ¡Hola ${usuarioLogueado}! Tus platos hoy son gratis.`;
+                msg.style.color = "var(--color-primary-dark)";
             }
 
-            usuarioLogueado = esSuscriptor.Nombre_vecino;
-            msg.textContent = `✅ Plan Semanal Activo. ¡Hola ${usuarioLogueado}! Tus platos hoy son gratis.`;
-            msg.style.color = "var(--color-primary-dark)";
-            renderMenu(menuData); // Volvemos a renderizar para mostrar "Gratis"
+            renderMenu(menuData); // Refresca la vista del menú según estado de suscripción
+            if (typeof renderCuenta === 'function') renderCuenta();
+            if (typeof renderTracking === 'function') renderTracking();
         } else {
             usuarioLogueado = null;
             msg.textContent = "❌ No tienes una suscripción activa con ese nombre.";
@@ -160,6 +162,16 @@ async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data: { Estado_Suscripcion: nuevoEstado } })
+  });
+  return await res.json();
+}
+
+// Actualiza el plan de suscripción
+async function actualizarPlanSuscripcion(nombreVecino, nuevoPlan) {
+  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: { Plan: nuevoPlan } })
   });
   return await res.json();
 }
@@ -307,6 +319,10 @@ function crearTarjetaPlato(plato) {
     ? linkImagen
     : 'https://via.placeholder.com/480x280?text=Sin+Imagen';
 
+  const suscripcionActiva = suscripcionActual?.Estado_Suscripcion === 'Activo';
+  const precioFinal = suscripcionActiva && usuarioLogueado ? 0 : (plato.Precio || '0');
+  const botonTexto = suscripcionActiva && usuarioLogueado ? 'Gratis' : '+';
+
   return `
     <article class="card">
       <img class="card__image" 
@@ -318,9 +334,9 @@ function crearTarjetaPlato(plato) {
         <h3 class="card__name">${plato.Nombre}</h3>
         <p class="text-muted">${plato.Categoria || 'General'}</p>
         <div class="card__footer">
-          <span class="card__price">Bs ${usuarioLogueado ? "0" : (plato.Precio || '0')}</span>
+          <span class="card__price">Bs ${precioFinal}</span>
           <button class="btn-add" onclick="procesarPedidoRapido('${plato.Nombre}', ${plato.Precio})">
-            ${usuarioLogueado ? "Gratis" : "+"}
+            ${botonTexto}
           </button>
         </div>
       </div>

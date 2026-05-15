@@ -66,6 +66,30 @@
             <button type="submit" class="btn-primary">Confirmar Plan Semanal</button>
             <p id="subscription-feedback" class="text-muted" style="min-height:1.2rem;"></p>
           </form>
+
+          <div id="account-panel" class="account-panel">
+            <div class="account-panel__row">
+              <div class="account-panel__info">
+                <p style="margin:0; font-weight:600;">Mi Cuenta</p>
+                <p id="account-status-value" class="text-muted" style="margin:0;">Ingresa tu nombre para ver tu plan.</p>
+              </div>
+              <label class="toggle-switch" title="Pausar Suscripción">
+                <input id="toggle-pause-sub" type="checkbox" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div style="margin-top:14px;">
+              <label style="display:block; font-weight:600; margin-bottom:8px;">Cambiar plan</label>
+              <select id="select-plan" class="account-panel__select">
+                <option value="Básico">Básico</option>
+                <option value="Premium">Premium</option>
+              </select>
+            </div>
+            <p id="account-message" class="text-muted" style="margin-top:14px;">No estás conectado.</p>
+            <div id="tracking-box" class="tracking-box" style="display:none;">
+              <p>Tu comida llega en aproximadamente <span id="tracking-minutes">0</span> minutos.</p>
+            </div>
+          </div>
         </section>
       </main>
     </div>
@@ -235,6 +259,104 @@
         }
       }
 
+      async function renderCuenta() {
+        const statusValue = document.getElementById('account-status-value');
+        const planSelect = document.getElementById('select-plan');
+        const togglePause = document.getElementById('toggle-pause-sub');
+        const accountMessage = document.getElementById('account-message');
+
+        if (!statusValue || !planSelect || !togglePause || !accountMessage) return;
+
+        if (!window.usuarioLogueado || !window.suscripcionActual) {
+          statusValue.textContent = 'Ingresa tu nombre para ver tu plan.';
+          planSelect.disabled = true;
+          togglePause.disabled = true;
+          accountMessage.textContent = 'No estás conectado.';
+          return;
+        }
+
+        statusValue.textContent = `Plan: ${window.suscripcionActual.Plan || 'Básico'} · Estado: ${window.suscripcionActual.Estado_Suscripcion || 'Activo'}`;
+        planSelect.disabled = false;
+        planSelect.value = window.suscripcionActual.Plan || 'Básico';
+        togglePause.disabled = false;
+        togglePause.checked = window.suscripcionActual.Estado_Suscripcion === 'Pausado';
+        accountMessage.textContent = window.suscripcionActual.Estado_Suscripcion === 'Pausado'
+          ? 'Tu suscripción está pausada. Actívala cuando quieras.'
+          : 'Tu suscripción está activa. Disfruta de tus días de plan.';
+      }
+
+      async function handleTogglePausar() {
+        const nuevoEstado = document.getElementById('toggle-pause-sub').checked ? 'Pausado' : 'Activo';
+
+        if (!window.usuarioLogueado) return;
+        try {
+          await actualizarEstadoSuscripcion(window.usuarioLogueado, nuevoEstado);
+          window.suscripcionActual = { ...window.suscripcionActual, Estado_Suscripcion: nuevoEstado };
+          renderCuenta();
+          renderMenu(window.menuData);
+          renderTracking();
+        } catch (error) {
+          console.error('No se pudo cambiar el estado de suscripción:', error);
+          alert('Error al actualizar la suscripción. Intenta nuevamente.');
+        }
+      }
+
+      async function handleCambiarPlan() {
+        const nuevoPlan = document.getElementById('select-plan').value;
+        if (!window.usuarioLogueado) return;
+
+        try {
+          await actualizarPlanSuscripcion(window.usuarioLogueado, nuevoPlan);
+          window.suscripcionActual = { ...window.suscripcionActual, Plan: nuevoPlan };
+          renderCuenta();
+          alert(`Plan actualizado a ${nuevoPlan}.`);
+        } catch (error) {
+          console.error('No se pudo actualizar el plan:', error);
+          alert('Error al cambiar el plan. Intenta nuevamente.');
+        }
+      }
+
+      function getPedidoActivo() {
+        const today = new Date().toISOString().slice(0, 10);
+        const pedidosHoy = pedidosDiarios.filter(pedido =>
+          pedido.Nombre_Cliente?.toLowerCase() === window.usuarioLogueado?.toLowerCase() &&
+          (pedido.Fecha || '').startsWith(today)
+        );
+
+        const activos = pedidosHoy.filter(pedido => {
+          const estadoEntrega = (pedido.Estado_Entrega || '').toLowerCase();
+          return estadoEntrega === 'en camino' || estadoEntrega === 'pendiente' || estadoEntrega === 'retrasado';
+        });
+
+        if (activos.length === 0) return null;
+        return activos.reduce((mejor, pedido) => {
+          const actualMin = Number(pedido.Tiempo_Estimado_Min) || Number(pedido.Distancia_KM) * 2 || Infinity;
+          const mejorMin = Number(mejor.Tiempo_Estimado_Min) || Number(mejor.Distancia_KM) * 2 || Infinity;
+          return actualMin < mejorMin ? pedido : mejor;
+        });
+      }
+
+      function renderTracking() {
+        const trackingBox = document.getElementById('tracking-box');
+        const trackingMinutes = document.getElementById('tracking-minutes');
+
+        if (!trackingBox || !trackingMinutes) return;
+        if (!window.usuarioLogueado) {
+          trackingBox.style.display = 'none';
+          return;
+        }
+
+        const pedidoActivo = getPedidoActivo();
+        if (!pedidoActivo) {
+          trackingBox.style.display = 'none';
+          return;
+        }
+
+        const minutos = Number(pedidoActivo.Tiempo_Estimado_Min) || Math.max(1, Math.ceil(Number(pedidoActivo.Distancia_KM) * 2));
+        trackingMinutes.textContent = minutos > 0 ? minutos : '...';
+        trackingBox.style.display = 'block';
+      }
+
       if (exportSummaryBtn) {
         exportSummaryBtn.addEventListener('click', () => {
           if (!pedidosDiarios || pedidosDiarios.length === 0) {
@@ -249,7 +371,14 @@
         });
       }
 
-      window.addEventListener('DOMContentLoaded', cargarResumenPedidos);
+      window.addEventListener('DOMContentLoaded', () => {
+        cargarResumenPedidos();
+        renderCuenta();
+        const togglePause = document.getElementById('toggle-pause-sub');
+        const planSelect = document.getElementById('select-plan');
+        if (togglePause) togglePause.addEventListener('change', handleTogglePausar);
+        if (planSelect) planSelect.addEventListener('change', handleCambiarPlan);
+      });
     </script>
   </body>
 </html>

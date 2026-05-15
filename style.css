@@ -297,6 +297,96 @@ p {
   font-size: 0.85rem;
 }
 
+.account-panel {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  margin-top: 20px;
+}
+
+.account-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.account-panel__info {
+  display: grid;
+  gap: 6px;
+}
+
+.account-panel__select {
+  width: 100%;
+  max-width: 240px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 32px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  border-radius: 999px;
+  transition: 0.25s;
+}
+
+.toggle-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.25s;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: var(--color-primary);
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+.tracking-box {
+  background: #e8f8ef;
+  border: 1px solid #27ae60;
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-top: 18px;
+}
+
+.tracking-box p {
+  margin: 0;
+  font-weight: 600;
+}
+
 .btn-delay {
   background-color: #f8d7da;
   color: #721c24;

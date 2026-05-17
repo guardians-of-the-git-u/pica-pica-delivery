@@ -9,8 +9,7 @@ const API_URL = "https://sheetdb.io/api/v1/iqzxj7h81qhi5";
 // =====================
 // MENÚ
 // =====================
-let usuarioLogueado = null; // Guardará el nombre si tiene suscripción
-let suscripcionActual = null; // Guardará datos de la suscripción activa
+let usuarioLogueado = null;
 
 // 1. Función para verificar si el usuario es suscriptor
 async function verificarYActivarModo() {
@@ -23,26 +22,23 @@ async function verificarYActivarModo() {
 
     try {
         const suscripciones = await obtenerSuscripciones();
-        // Buscamos si el nombre existe en la lista de suscriptores
         const esSuscriptor = suscripciones.find(s => 
             s.Nombre_vecino.toLowerCase() === nombreInput.toLowerCase()
         );
 
         if (esSuscriptor) {
-            usuarioLogueado = esSuscriptor.Nombre_vecino;
-            suscripcionActual = esSuscriptor;
-
             if (esSuscriptor.Estado_Suscripcion === "Pausado") {
-                msg.textContent = "⏸️ Tu suscripción está pausada. Puedes reanudarla desde Mi Cuenta.";
+                usuarioLogueado = null;
+                msg.textContent = "⏸️ Tu suscripción está pausada. Contacta soporte para reactivarla.";
                 msg.style.color = "#e67e22";
-            } else {
-                msg.textContent = `✅ Plan Semanal Activo. ¡Hola ${usuarioLogueado}! Tus platos hoy son gratis.`;
-                msg.style.color = "var(--color-primary-dark)";
+                renderMenu(menuData);
+                return;
             }
 
-            renderMenu(menuData); // Refresca la vista del menú según estado de suscripción
-            if (typeof renderCuenta === 'function') renderCuenta();
-            if (typeof renderTracking === 'function') renderTracking();
+            usuarioLogueado = esSuscriptor.Nombre_vecino;
+            msg.textContent = `✅ Plan Semanal Activo. ¡Hola ${usuarioLogueado}! Tus platos hoy son gratis.`;
+            msg.style.color = "var(--color-primary-dark)";
+            renderMenu(menuData);
         } else {
             usuarioLogueado = null;
             msg.textContent = "❌ No tienes una suscripción activa con ese nombre.";
@@ -138,7 +134,7 @@ async function obtenerSuscripciones() {
   return data;
 }
 
-// Registrar nueva suscripción (MODIFICADO: incluye Estado y Plan_ID)
+// Registrar nueva suscripción (incluye Estado y Plan_ID)
 async function registrarSuscripcion(sub) {
   const res = await fetch(`${API_URL}?sheet=Suscripciones`, {
     method: "POST",
@@ -156,7 +152,6 @@ async function registrarSuscripcion(sub) {
 // HU2: Pausar / Reanudar suscripción (PUT)
 // =============================================
 
-// Actualiza el Estado_Suscripcion de un usuario
 async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
   const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
     method: "PUT",
@@ -166,17 +161,6 @@ async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
   return await res.json();
 }
 
-// Actualiza el plan de suscripción
-async function actualizarPlanSuscripcion(nombreVecino, nuevoPlan) {
-  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: { Plan: nuevoPlan } })
-  });
-  return await res.json();
-}
-
-// Alterna entre Activo y Pausado automáticamente
 async function toggleSuscripcion(nombreVecino) {
   try {
     const suscripciones = await obtenerSuscripciones();
@@ -202,25 +186,34 @@ async function toggleSuscripcion(nombreVecino) {
 }
 
 // =============================================
+// HU6: Cálculo de Tiempo Estimado de Entrega
+// Fórmula: (distancia × min/km según vehículo) + cocina
+// Misael solo llama: calcularTiempoEstimado(2.5)
+// =============================================
+function calcularTiempoEstimado(distanciaKm, vehiculo) {
+  // Bici: ~15 km/h → 4 min/km | Moto: ~30 km/h → 2 min/km
+  const tiempoPorKm = (vehiculo === "Moto") ? 2 : 4;
+  const tiempoCocina = 15; // 15 minutos de preparación
+  return Math.ceil((distanciaKm * tiempoPorKm) + tiempoCocina);
+}
+
+// =============================================
 // HU4: Asignar repartidor a un pedido (PUT)
 // =============================================
 
-// Asigna repartidor, distancia y calcula tiempo estimado
+// Asignación manual (el admin elige el repartidor)
 async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
-  // Velocidad promedio: Bici ~15 km/h, Moto ~30 km/h
-  // Buscamos el vehículo del repartidor para calcular mejor
-  let velocidad = 15; // Por defecto bici
+  // Buscar vehículo del repartidor para calcular tiempo
+  let vehiculo = "Bici";
   try {
     const repartidores = await obtenerRepartidores();
-    const repartidor = repartidores.find(r => r.ID_Repartidor === idRepartidor);
-    if (repartidor && repartidor.Vehiculo === "Moto") {
-      velocidad = 30;
-    }
+    const rep = repartidores.find(r => r.ID_Repartidor === idRepartidor);
+    if (rep) vehiculo = rep.Vehiculo;
   } catch (e) {
-    console.warn("No se pudo verificar vehículo, usando velocidad de bici.");
+    console.warn("No se pudo verificar vehículo, usando Bici por defecto.");
   }
 
-  const tiempoEstimado = Math.ceil((distanciaKM / velocidad) * 60);
+  const tiempoEstimado = calcularTiempoEstimado(distanciaKM, vehiculo);
 
   const res = await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
     method: "PUT",
@@ -237,6 +230,60 @@ async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
   return await res.json();
 }
 
+// =============================================
+// HU4: Simulador de Cercanía (asignación automática)
+// Busca el primer repartidor Disponible y lo asigna.
+// El frontend solo llama: asignarRepartidorAutomatico(idPedido, distanciaKM)
+// =============================================
+async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
+  try {
+    // 1. Buscar repartidores disponibles
+    const disponibles = await obtenerRepartidoresDisponibles();
+
+    if (!disponibles || disponibles.length === 0) {
+      alert("⚠️ No hay repartidores disponibles en este momento.");
+      return null;
+    }
+
+    // 2. Seleccionar el primer repartidor disponible
+    //    (simula cercanía: el más cercano es el primero de la lista)
+    const elegido = disponibles[0];
+
+    // 3. Calcular tiempo estimado según su vehículo
+    const tiempoEstimado = calcularTiempoEstimado(distanciaKM, elegido.Vehiculo);
+
+    // 4. Actualizar el pedido en la hoja Pedidos
+    await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: {
+          ID_Repartidor: elegido.ID_Repartidor,
+          Distancia_KM: distanciaKM,
+          Tiempo_Estimado_Min: tiempoEstimado,
+          Estado_Entrega: "En Camino"
+        }
+      })
+    });
+
+    // 5. Marcar repartidor como ocupado
+    await actualizarDisponibilidadRepartidor(elegido.ID_Repartidor, "No Disponible");
+
+    console.log(`✅ ${elegido.Nombre} (${elegido.Vehiculo}) asignado al pedido ${idPedido} - ${tiempoEstimado} min`);
+
+    // 6. Retornar info para que el frontend la muestre
+    return {
+      repartidor: elegido.Nombre,
+      vehiculo: elegido.Vehiculo,
+      tiempoEstimado: tiempoEstimado
+    };
+  } catch (error) {
+    console.error("Error en asignación automática:", error);
+    alert("Error al asignar repartidor.");
+    return null;
+  }
+}
+
 // Actualizar solo el estado de entrega
 async function actualizarEstadoEntrega(idPedido, nuevoEstado) {
   const res = await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
@@ -247,23 +294,27 @@ async function actualizarEstadoEntrega(idPedido, nuevoEstado) {
   return await res.json();
 }
 
+// Completar entrega y liberar repartidor
+async function completarEntrega(idPedido, idRepartidor) {
+  await actualizarEstadoEntrega(idPedido, "Entregado");
+  await actualizarDisponibilidadRepartidor(idRepartidor, "Disponible");
+  console.log(`✅ Pedido ${idPedido} entregado. ${idRepartidor} disponible de nuevo.`);
+}
+
 // =====================
 // REPARTIDORES
 // =====================
 
-// Obtener todos los repartidores
 async function obtenerRepartidores() {
   const res = await fetch(`${API_URL}?sheet=Repartidores`);
   return await res.json();
 }
 
-// Obtener solo los disponibles
 async function obtenerRepartidoresDisponibles() {
   const res = await fetch(`${API_URL}/search?Estado_Disponibilidad=Disponible&sheet=Repartidores`);
   return await res.json();
 }
 
-// Cambiar disponibilidad de un repartidor
 async function actualizarDisponibilidadRepartidor(idRepartidor, nuevoEstado) {
   const res = await fetch(`${API_URL}/ID_Repartidor/${idRepartidor}?sheet=Repartidores`, {
     method: "PUT",
@@ -275,23 +326,29 @@ async function actualizarDisponibilidadRepartidor(idRepartidor, nuevoEstado) {
 
 
 // =====================
-// EJEMPLO DE USO - FUNCIONES NUEVAS
+// EJEMPLO DE USO - GUÍA PARA EL FRONTEND
 // =====================
 //
-// // HU2 - Pausar suscripción de un usuario:
+// // HU2 - Pausar suscripción:
 // actualizarEstadoSuscripcion("Virgilio", "Pausado");
 //
-// // HU2 - Alternar estado (si está Activo lo pausa, si está Pausado lo activa):
+// // HU2 - Alternar estado:
 // toggleSuscripcion("Virgilio");
 //
-// // HU4 - Asignar repartidor R001 a un pedido, distancia 2.5 km:
+// // HU4 - Asignar repartidor AUTOMÁTICO (distancia 2.5 km):
+// const info = await asignarRepartidorAutomatico("1778377164161", 2.5);
+// // info = { repartidor: "Luis Mamani", vehiculo: "Bici", tiempoEstimado: 25 }
+//
+// // HU4 - Asignar MANUAL:
 // asignarRepartidor("1778377164161", "R001", 2.5);
 //
-// // Marcar pedido como entregado:
-// actualizarEstadoEntrega("1778377164161", "Entregado");
+// // HU6 - Calcular tiempo (para mostrar en pantalla):
+// calcularTiempoEstimado(1.2);          // → 20 min (bici, default)
+// calcularTiempoEstimado(1.2, "Moto");  // → 18 min (moto)
+// calcularTiempoEstimado(3.0);          // → 27 min (bici)
 //
-// // Ver repartidores disponibles:
-// obtenerRepartidoresDisponibles().then(r => console.log(r));
+// // Completar entrega y liberar repartidor:
+// completarEntrega("1778377164161", "R001");
 //
 
 
@@ -307,21 +364,13 @@ const subscriptionFeedback = document.getElementById('subscription-feedback');
 
 let menuData = [];
 
-// 2. Modificar la creación de la tarjeta para mostrar "GRATIS"
 function crearTarjetaPlato(plato) {
-  // Acceso seguro a la propiedad
   const linkImagen = plato.Imagen_Url; 
-  
-  // Imprime en consola para ver qué está llegando realmente
   console.log("Cargando imagen para:", plato.Nombre, "URL:", linkImagen);
 
   const imageUrl = (linkImagen && linkImagen.trim() !== "")
     ? linkImagen
     : 'https://via.placeholder.com/480x280?text=Sin+Imagen';
-
-  const suscripcionActiva = suscripcionActual?.Estado_Suscripcion === 'Activo';
-  const precioFinal = suscripcionActiva && usuarioLogueado ? 0 : (plato.Precio || '0');
-  const botonTexto = suscripcionActiva && usuarioLogueado ? 'Gratis' : '+';
 
   return `
     <article class="card">
@@ -334,9 +383,9 @@ function crearTarjetaPlato(plato) {
         <h3 class="card__name">${plato.Nombre}</h3>
         <p class="text-muted">${plato.Categoria || 'General'}</p>
         <div class="card__footer">
-          <span class="card__price">Bs ${precioFinal}</span>
+          <span class="card__price">Bs ${usuarioLogueado ? "0" : (plato.Precio || '0')}</span>
           <button class="btn-add" onclick="procesarPedidoRapido('${plato.Nombre}', ${plato.Precio})">
-            ${botonTexto}
+            ${usuarioLogueado ? "Gratis" : "+"}
           </button>
         </div>
       </div>
@@ -350,7 +399,6 @@ function renderMenu(platos) {
     menuContainer.innerHTML = '<p class="text-muted">No hay platos disponibles en este momento.</p>';
     return;
   }
-
   menuContainer.innerHTML = platos.map(crearTarjetaPlato).join('');
 }
 
@@ -391,26 +439,24 @@ function mostrarFeedback(mensaje, esError = false) {
   subscriptionFeedback.textContent = mensaje;
   subscriptionFeedback.style.color = esError ? '#d64541' : 'var(--color-text-body)';
 }
-// 3. Función para procesar el pedido al hacer clic en "+"
+
 async function procesarPedidoRapido(nombrePlato, precioOriginal) {
     let nombreCliente = usuarioLogueado;
     let precioFinal = usuarioLogueado ? 0 : precioOriginal;
 
-    // Si no está identificado, le pedimos su nombre para el pedido normal
     if (!usuarioLogueado) {
         nombreCliente = prompt("Ingresa tu nombre para el pedido:");
         if (!nombreCliente) return;
     }
 
     const nuevoPedido = {
-        ID_Pedido: Date.now(), // Generamos un ID único temporal
+        ID_Pedido: Date.now(),
         Nombre_Cliente: nombreCliente,
         Nombre_Plato: nombrePlato,
         Hora_Entrega: "Por confirmar",
         Fecha: new Date().toISOString().slice(0, 10),
         Estado: "pendiente",
         Precio: precioFinal,
-        // Nuevas columnas inicializadas
         ID_Repartidor: "",
         Distancia_KM: "",
         Tiempo_Estimado_Min: "",
@@ -421,13 +467,12 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal) {
         alert("Enviando pedido...");
         await crearPedido(nuevoPedido);
         alert(`¡Pedido realizado! ${nombrePlato} por Bs ${precioFinal}`);
-        if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos(); // Recarga el resumen si existe
+        if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
     } catch (error) {
         alert("Hubo un error al procesar el pedido.");
     }
 }
 
-// 4. Asignar el evento al botón de verificar cuando cargue la página
 document.addEventListener('DOMContentLoaded', () => {
     const btnCheck = document.getElementById('btn-check-sub');
     if (btnCheck) {
@@ -478,6 +523,7 @@ if (subscriptionForm) {
 }
 
 window.addEventListener('DOMContentLoaded', iniciarPagina);
+
 // ============================================
 // LÓGICA PARA AÑADIR PLATOS (ADMIN)
 // ============================================
@@ -489,9 +535,8 @@ if (addDishForm) {
     addDishForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // 1. Capturamos los datos del formulario
         const nuevoPlato = {
-            ID: Date.now(), // ID único basado en tiempo
+            ID: Date.now(),
             Nombre: document.getElementById('dish-name').value.trim(),
             Categoria: document.getElementById('dish-category').value.trim(),
             Precio: document.getElementById('dish-price').value,
@@ -503,15 +548,12 @@ if (addDishForm) {
         dishFeedback.style.color = "var(--color-primary)";
 
         try {
-            // 2. Llamamos a la función que ya tenías en el script
             const resultado = await agregarPlato(nuevoPlato);
 
             if (resultado) {
                 dishFeedback.textContent = "✅ ¡Plato añadido con éxito!";
                 dishFeedback.style.color = "var(--color-primary-dark)";
-                addDishForm.reset(); // Limpiamos el formulario
-                
-                // Opcional: Recargar el menú si estás en la misma página
+                addDishForm.reset();
                 if (typeof iniciarPagina === 'function') iniciarPagina();
             }
         } catch (error) {

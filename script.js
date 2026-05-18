@@ -563,3 +563,79 @@ if (addDishForm) {
         }
     });
 }
+
+/*notificacion*/
+
+// ============================================
+// SISTEMA DE NOTIFICACIONES EN TIEMPO REAL (POLLING)
+// ============================================
+
+// 1. Función global para activar visualmente el banner
+function dispararNotificacion(titulo, texto) {
+    const banner = document.querySelector('.notification-banner');
+    const bannerTitle = document.querySelector('.notification-banner__title');
+    const bannerText = document.querySelector('.notification-banner__text');
+
+    if (banner && bannerTitle && bannerText) {
+        // Inyectamos los datos reales detectados en la API
+        bannerTitle.textContent = titulo;
+        bannerText.textContent = texto;
+
+        // Mostramos el banner agregando la clase de CSS
+        banner.classList.add('show');
+
+        // Lo ocultamos automáticamente tras 5 segundos
+        setTimeout(() => {
+            banner.classList.remove('show');
+        }, 5000);
+    }
+}
+
+// 2. Guardamos el estado de los pedidos para comparar cambios
+let totalPedidosConocidos = -1;
+
+// 3. Función de fondo que consulta a SheetDB automáticamente
+async function revisarNuevosPedidosAutomatizado() {
+    try {
+        // Reutilizamos tu función para obtener los pedidos de la API
+        const pedidos = await obtenerPedidos();
+        const pedidosDiarios = Array.isArray(pedidos) ? pedidos : [];
+        
+        // Filtramos solo los pedidos creados el día de hoy
+        const today = new Date().toISOString().slice(0, 10);
+        const pedidosHoy = pedidosDiarios.filter(pedido => (pedido.Fecha || '').startsWith(today));
+
+        // Si es la primera vez que carga la página, inicializamos el contador sin lanzar alertas
+        if (totalPedidosConocidos === -1) {
+            totalPedidosConocidos = pedidosHoy.length;
+            return;
+        }
+
+        // 🔥 ¡DETECCIÓN DE NUEVO PEDIDO!
+        // Si hay más pedidos en la API de los que teníamos registrados...
+        if (pedidosHoy.length > totalPedidosConocidos) {
+            // Obtenemos el último pedido que ingresó a la lista
+            const nuevoPedido = pedidosHoy[pedidosHoy.length - 1];
+            
+            // Disparamos la alerta en pantalla con sus datos reales
+            dispararNotificacion(
+                `🔔 ¡Nuevo Pedido Recibido!`,
+                `${nuevoPedido.Nombre_Cliente || 'Un vecino'} solicitó: ${nuevoPedido.Nombre_Plato || 'Almuerzo'}`
+            );
+
+            // Si la función de renderizado de la interfaz existe en la página actual, la actualizamos en vivo
+            if (typeof cargarResumenPedidos === 'function') {
+                cargarResumenPedidos();
+            }
+        }
+
+        // Sincronizamos el contador con el estado actual de la base de datos
+        totalPedidosConocidos = pedidosHoy.length;
+
+    } catch (error) {
+        console.error("Error en el monitoreo en segundo plano:", error);
+    }
+}
+
+// 4. Configurar el "reloj" (Revisa la API automáticamente cada 10 segundos)
+setInterval(revisarNuevosPedidosAutomatizado, 10000);

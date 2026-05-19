@@ -1,3 +1,8 @@
+const safeCall = (funcName, ...args) => {
+    if (typeof window[funcName] === 'function') {
+        window[funcName](...args);
+    }
+};
 // ============================================
 // PICA PICA DELIVERY - Conexión con la API
 // Backend: Juan Escalante

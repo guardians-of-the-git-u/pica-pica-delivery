@@ -676,3 +676,40 @@ async function revisarNuevosPedidosAutomatizado() {
 
 // 4. Configurar el "reloj" (Revisa la API automáticamente cada 10 segundos)
 setInterval(revisarNuevosPedidosAutomatizado, 10000);
+// --- LÓGICA DE GESTIÓN DINÁMICA (Sprint 2) ---
+
+// HU2: Pausar/Reanudar Suscripción
+async function actualizarEstadoSuscripcion(nombre, nuevoEstado) {
+    // Primero buscamos el ID del registro para poder actualizarlo
+    const subs = await obtenerSuscripciones();
+    const sub = subs.find(s => s.Nombre_vecino.toLowerCase() === nombre.toLowerCase());
+    
+    if (!sub) return alert("Suscripción no encontrada");
+
+    return await fetch(`${API_URL}/Nombre_vecino/${sub.Nombre_vecino}?sheet=Suscripciones`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { Estado_Suscripcion: nuevoEstado } })
+    });
+}
+
+// HU3: Cambiar Plan de Suscripción
+async function actualizarPlanSuscripcion(nombre, nuevoPlan) {
+    const subs = await obtenerSuscripciones();
+    const sub = subs.find(s => s.Nombre_vecino.toLowerCase() === nombre.toLowerCase());
+    
+    return await fetch(`${API_URL}/Nombre_vecino/${sub.Nombre_vecino}?sheet=Suscripciones`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { Plan: nuevoPlan } })
+    });
+}
+
+// HU4: Asignar Pedido a Repartidor
+async function asignarRepartidor(idPedido, idRepartidor) {
+    return await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: { ID_Repartidor: idRepartidor, Estado_Entrega: "En Camino" } })
+    });
+}

@@ -1,109 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Repartidor (HU5)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      padding: 15px;
-    }
-    .tarjeta-pedido {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .direccion {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #333;
-    }
-    .tiempo-estimado {
-      color: #e67e22;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-    /* Botón Gigante solicitado en la HU5 */
-    .btn-entregado {
-      display: block;
-      width: 100%;
-      background-color: #2ecc71;
-      color: white;
-      border: none;
-      padding: 20px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      text-transform: uppercase;
-      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
-    }
-    .btn-entregado:active {
-      background-color: #27ae60;
-      transform: scale(0.98);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repartidor | Pica Pica</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-header__title">Panel de Repartidor</h1>
+            <p class="app-header__greeting">Gestiona tus entregas del día</p>
+        </header>
 
-  <h1>Mis Entregas en Bici 🚲</h1>
+        <main class="px-page py-2">
+            <section class="card mb-2" style="padding: 15px;">
+                <label>Tu estado actual:</label>
+                <select id="status-repartidor" onchange="cambiarMiDisponibilidad()">
+                    <option value="Disponible">Disponible ✅</option>
+                    <option value="No Disponible">No Disponible ⏸️</option>
+                </select>
+            </section>
 
-  <!-- Lista de Pedidos Asignados -->
-  <div id="contenedor-pedidos">
-    <!-- El código JavaScript renderizará el pedido aquí -->
-  </div>
-
-<script>
-// Datos del pedido asignado (Simulación de lo recibido desde el Admin)
-const pedidoAsignado = {
-  id: 101,
-  direccion: "Av. Principal 123, Barrio Central",
-  distanciaKm: 3 // Este es el dato de distancia que mencionas vigilar
-};
-
-// Lógica para calcular el tiempo estimado (HU5)
-// Fórmula: distancia * 5 minutos + 10 minutos de cocina
-function calcularTiempoEstimado(distancia) {
-  const tiempoCocina = 10;
-  const tiempoPorKm = 5;
-  return (distancia * tiempoPorKm) + tiempoCocina;
-}
-
-// Renderizar la vista del repartidor
-function cargarVistaRepartidor() {
-  const contenedor = document.getElementById("contenedor-pedidos");
-  const tiempoTotal = calcularTiempoEstimado(pedidoAsignado.distanciaKm);
-
-  contenedor.innerHTML = `
-    <div class="tarjeta-pedido" id="tarjeta-${pedidoAsignado.id}">
-      <h3>Pedido #${pedidoAsignado.id}</h3>
-      <p class="direccion">📍 Dirección: ${pedidoAsignado.direccion}</p>
-      <p>Distancia: ${pedidoAsignado.distanciaKm} km</p>
-      <p class="tiempo-estimado">⏱️ Tiempo Estimado: ${tiempoTotal} min (Cocina + Viaje)</p>
-      
-      <!-- Botón Gigante -->
-      <button class="btn-entregado" onclick="marcarComoEntregado(${pedidoAsignado.id})">
-        Marcar como Entregado
-      </button>
+            <section id="repartidor-orders-container">
+                <h2>Pedidos Asignados</h2>
+                <div id="listado-pedidos-repartidor">
+                    <p class="text-muted">Cargando tus pedidos...</p>
+                </div>
+            </section>
+        </main>
     </div>
-  `;
-}
 
-// Acción del botón gigante (HU5)
-function marcarComoEntregado(idPedido) {
-  alert(`¡Buen trabajo! El pedido #${idPedido} ha sido marcado como entregado.`);
-  
-  // Ocultar o limpiar la pantalla tras entregar
-  document.getElementById(`tarjeta-${idPedido}`).innerHTML = "<h3>¡No tienes pedidos pendientes por ahora! 🌟</h3>";
-}
+    <script src="script.js"></script>
+    <script>
+        // ID del repartidor (Esto deberías obtenerlo de un login o parámetro)
+        const MI_ID_REPARTIDOR = "R001"; 
 
-// Inicializar la vista al cargar la página
-window.onload = cargarVistaRepartidor;
-</script>
+        async function cargarPedidosRepartidor() {
+            const container = document.getElementById('listado-pedidos-repartidor');
+            try {
+                const todosLosPedidos = await obtenerPedidos();
+                const misPedidos = todosLosPedidos.filter(p => p.ID_Repartidor === MI_ID_REPARTIDOR && p.Estado_Entrega !== 'Entregado');
 
+                if (misPedidos.length === 0) {
+                    container.innerHTML = '<p>No tienes pedidos activos en este momento.</p>';
+                    return;
+                }
+
+                container.innerHTML = misPedidos.map(p => `
+                    <div class="card mb-2" style="padding:15px;">
+                        <h3>${p.Nombre_Plato}</h3>
+                        <p>Cliente: ${p.Nombre_Cliente}</p>
+                        <p><strong>ETA:</strong> ${p.Hora_Entrega || 'Por definir'}</p>
+                        <button class="btn-primary" onclick="marcarEntregado('${p.ID_Pedido}')">Marcar como Entregado</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = '<p>Error al cargar pedidos.</p>';
+            }
+        }
+
+        async function marcarEntregado(idPedido) {
+            await completarEntrega(idPedido, MI_ID_REPARTIDOR);
+            alert("¡Pedido entregado con éxito!");
+            cargarPedidosRepartidor();
+        }
+
+        async function cambiarMiDisponibilidad() {
+            const nuevoEstado = document.getElementById('status-repartidor').value;
+            await actualizarDisponibilidadRepartidor(MI_ID_REPARTIDOR, nuevoEstado);
+            alert("Estado actualizado a: " + nuevoEstado);
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarPedidosRepartidor);
+    </script>
 </body>
 </html>

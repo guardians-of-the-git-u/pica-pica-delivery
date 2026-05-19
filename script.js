@@ -689,17 +689,45 @@ async function revisarNuevosPedidosAutomatizado() {
     }
 }
 // ============================================
-// CORRECCIÓN: Función que faltaba para el resumen
+// FUNCIONES DE APOYO (REQUERIDAS POR EL HTML)
 // ============================================
+
 function formatearDuracion(minutos) {
     if (!minutos || isNaN(minutos)) return "0 min";
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    
-    if (horas > 0) {
-        return `${horas}h ${mins}min`;
-    }
-    return `${mins} min`;
+    const m = Math.round(minutos);
+    return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`;
+}
+
+function formatHora(hora) {
+    if (!hora || hora === "Sin hora") return "Pendiente";
+    return hora;
+}
+
+function calcularTiempoEntrega(distancia) {
+    // Si no hay distancia, estimamos 30 min por defecto
+    return distancia ? Math.ceil((distancia * 4) + 15) : 30;
+}
+
+function obtenerHoraEstimacion(minutos) {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() + minutos);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function reportarRetraso(idPedido) {
+    if(!confirm("¿Confirmar reporte de retraso para el pedido " + idPedido + "?")) return;
+    await actualizarEstadoEntrega(idPedido, "Retrasado");
+    alert("Reportado como retrasado.");
+    if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
+}
+
+function agruparPorHora(pedidos) {
+    return pedidos.reduce((grupos, pedido) => {
+        const hora = pedido.Hora_Creacion || 'Sin hora';
+        if (!grupos[hora]) grupos[hora] = [];
+        grupos[hora].push(pedido);
+        return grupos;
+    }, {});
 }
 // 4. Polling cada 60 segundos (antes era 10s, se agotaba el límite de SheetDB)
 setInterval(revisarNuevosPedidosAutomatizado, 60000);

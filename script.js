@@ -127,6 +127,35 @@ async function actualizarEstadoPedido(idPedido, nuevoEstado) {
   });
   return await res.json();
 }
+// =============================================
+// NUEVA FUNCIÓN: Cargar Resumen de Pedidos
+// =============================================
+async function cargarResumenPedidos() {
+    const container = document.getElementById('orders-summary-container');
+    if (!container) return; // Si no existe el contenedor, no hacemos nada
+
+    try {
+        const pedidos = await obtenerPedidos();
+        const today = new Date().toISOString().slice(0, 10);
+        const pedidosHoy = Array.isArray(pedidos) ? pedidos.filter(p => (p.Fecha || '').startsWith(today)) : [];
+
+        if (pedidosHoy.length === 0) {
+            container.innerHTML = '<p>No hay pedidos hoy.</p>';
+            return;
+        }
+
+        container.innerHTML = pedidosHoy.map(p => `
+            <div class="card mb-2" style="padding: 10px; border: 1px solid #ddd;">
+                <p><strong>${p.Nombre_Cliente}</strong>: ${p.Nombre_Plato}</p>
+                <small>Estado: ${p.Estado_Entrega || 'Pendiente'}</small>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error("Error al cargar el resumen:", error);
+        container.innerHTML = '<p>Error al cargar el resumen. Intenta recargar la página.</p>';
+    }
+}
 
 // =====================
 // SUSCRIPCIONES

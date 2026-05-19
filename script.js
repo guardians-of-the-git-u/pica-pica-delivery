@@ -730,4 +730,4 @@ function agruparPorHora(pedidos) {
     }, {});
 }
 // 4. Polling cada 60 segundos (antes era 10s, se agotaba el límite de SheetDB)
-setInterval(revisarNuevosPedidosAutomatizado, 60000);
+setInterval(revisarNuevosPedidosAutomatizado, 100000);

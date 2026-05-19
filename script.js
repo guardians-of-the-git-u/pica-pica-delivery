@@ -688,6 +688,18 @@ async function revisarNuevosPedidosAutomatizado() {
         console.error("Error en el monitoreo en segundo plano:", error);
     }
 }
-
+// ============================================
+// CORRECCIÓN: Función que faltaba para el resumen
+// ============================================
+function formatearDuracion(minutos) {
+    if (!minutos || isNaN(minutos)) return "0 min";
+    const horas = Math.floor(minutos / 60);
+    const mins = minutos % 60;
+    
+    if (horas > 0) {
+        return `${horas}h ${mins}min`;
+    }
+    return `${mins} min`;
+}
 // 4. Polling cada 60 segundos (antes era 10s, se agotaba el límite de SheetDB)
 setInterval(revisarNuevosPedidosAutomatizado, 60000);

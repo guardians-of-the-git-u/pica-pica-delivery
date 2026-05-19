@@ -678,7 +678,7 @@ async function revisarNuevosPedidosAutomatizado() {
 }
 
 // 4. Configurar el "reloj" (Revisa la API automáticamente cada 10 segundos)
-setInterval(revisarNuevosPedidosAutomatizado, 10000);
+setInterval(revisarNuevosPedidosAutomatizado, 100000);
 // --- LÓGICA DE GESTIÓN DINÁMICA (Sprint 2) ---
 
 // HU2: Pausar/Reanudar Suscripción

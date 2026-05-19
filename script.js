@@ -158,7 +158,8 @@ async function registrarSuscripcion(sub) {
 // =============================================
 
 async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
-  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
+  const nombreCodificado = encodeURIComponent(nombreVecino);
+  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreCodificado}?sheet=Suscripciones`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data: { Estado_Suscripcion: nuevoEstado } })
@@ -167,7 +168,8 @@ async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
 }
 
 async function actualizarPlanSuscripcion(nombreVecino, nuevoPlan) {
-  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
+  const nombreCodificado = encodeURIComponent(nombreVecino);
+  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreCodificado}?sheet=Suscripciones`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data: { Plan: nuevoPlan } })

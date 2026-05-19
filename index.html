@@ -131,10 +131,14 @@
         return `${horas}:${minutos}`;
       }
 
-      function formatearDuracion(minutos) {
-        return minutes ? `${minutos} min` : 'Por calcular';
-      }
-
+      // BUSCA ESTA FUNCIÓN EN TU INDEX.HTML Y CÁMBIALA POR ESTA:
+function formatearDuracion(minutos) {
+    // El error era usar 'minutes' en lugar de 'minutos'
+    if (minutos === undefined || minutos === null || isNaN(minutos)) {
+        return 'Por calcular';
+    }
+    return `${minutos} min`;
+}
       function agruparPorHora(pedidos) {
         return pedidos.reduce((acc, pedido) => {
           const hora = pedido.Hora_Entrega && /^\d{1,2}:\d{2}$/.test(pedido.Hora_Entrega)

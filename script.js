@@ -1,11 +1,10 @@
-
 // ============================================
 // PICA PICA DELIVERY - Conexión con la API
 // Backend: Juan Escalante
 // API: SheetDB + Google Sheets
 // ============================================
 
-const API_URL = "https://sheetdb.io/api/v1/iqzxj7h81qhi5";
+const API_URL = "https://sheetdb.io/api/v1/i2gfuue5uz1cv";
 
 // =====================
 // MENÚ
@@ -159,8 +158,7 @@ async function registrarSuscripcion(sub) {
 // =============================================
 
 async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
-  const nombreCodificado = encodeURIComponent(nombreVecino);
-  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreCodificado}?sheet=Suscripciones`, {
+  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data: { Estado_Suscripcion: nuevoEstado } })
@@ -169,8 +167,7 @@ async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
 }
 
 async function actualizarPlanSuscripcion(nombreVecino, nuevoPlan) {
-  const nombreCodificado = encodeURIComponent(nombreVecino);
-  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreCodificado}?sheet=Suscripciones`, {
+  const res = await fetch(`${API_URL}/Nombre_vecino/${nombreVecino}?sheet=Suscripciones`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data: { Plan: nuevoPlan } })
@@ -617,14 +614,9 @@ function dispararNotificacion(titulo, texto) {
     const bannerText = document.querySelector('.notification-banner__text');
 
     if (banner && bannerTitle && bannerText) {
-        // Inyectamos los datos reales detectados en la API
         bannerTitle.textContent = titulo;
         bannerText.textContent = texto;
-
-        // Mostramos el banner agregando la clase de CSS
         banner.classList.add('show');
-
-        // Lo ocultamos automáticamente tras 5 segundos
         setTimeout(() => {
             banner.classList.remove('show');
         }, 5000);
@@ -637,39 +629,30 @@ let totalPedidosConocidos = -1;
 // 3. Función de fondo que consulta a SheetDB automáticamente
 async function revisarNuevosPedidosAutomatizado() {
     try {
-        // Reutilizamos tu función para obtener los pedidos de la API
         const pedidos = await obtenerPedidos();
         const pedidosDiarios = Array.isArray(pedidos) ? pedidos : [];
         
-        // Filtramos solo los pedidos creados el día de hoy
         const today = new Date().toISOString().slice(0, 10);
         const pedidosHoy = pedidosDiarios.filter(pedido => (pedido.Fecha || '').startsWith(today));
 
-        // Si es la primera vez que carga la página, inicializamos el contador sin lanzar alertas
         if (totalPedidosConocidos === -1) {
             totalPedidosConocidos = pedidosHoy.length;
             return;
         }
 
-        // 🔥 ¡DETECCIÓN DE NUEVO PEDIDO!
-        // Si hay más pedidos en la API de los que teníamos registrados...
         if (pedidosHoy.length > totalPedidosConocidos) {
-            // Obtenemos el último pedido que ingresó a la lista
             const nuevoPedido = pedidosHoy[pedidosHoy.length - 1];
             
-            // Disparamos la alerta en pantalla con sus datos reales
             dispararNotificacion(
                 `🔔 ¡Nuevo Pedido Recibido!`,
                 `${nuevoPedido.Nombre_Cliente || 'Un vecino'} solicitó: ${nuevoPedido.Nombre_Plato || 'Almuerzo'}`
             );
 
-            // Si la función de renderizado de la interfaz existe en la página actual, la actualizamos en vivo
             if (typeof cargarResumenPedidos === 'function') {
                 cargarResumenPedidos();
             }
         }
 
-        // Sincronizamos el contador con el estado actual de la base de datos
         totalPedidosConocidos = pedidosHoy.length;
 
     } catch (error) {
@@ -677,42 +660,5 @@ async function revisarNuevosPedidosAutomatizado() {
     }
 }
 
-// 4. Configurar el "reloj" (Revisa la API automáticamente cada 10 segundos)
-setInterval(revisarNuevosPedidosAutomatizado, 100000);
-// --- LÓGICA DE GESTIÓN DINÁMICA (Sprint 2) ---
-
-// HU2: Pausar/Reanudar Suscripción
-async function actualizarEstadoSuscripcion(nombre, nuevoEstado) {
-    // Primero buscamos el ID del registro para poder actualizarlo
-    const subs = await obtenerSuscripciones();
-    const sub = subs.find(s => s.Nombre_vecino.toLowerCase() === nombre.toLowerCase());
-    
-    if (!sub) return alert("Suscripción no encontrada");
-
-    return await fetch(`${API_URL}/Nombre_vecino/${sub.Nombre_vecino}?sheet=Suscripciones`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { Estado_Suscripcion: nuevoEstado } })
-    });
-}
-
-// HU3: Cambiar Plan de Suscripción
-async function actualizarPlanSuscripcion(nombre, nuevoPlan) {
-    const subs = await obtenerSuscripciones();
-    const sub = subs.find(s => s.Nombre_vecino.toLowerCase() === nombre.toLowerCase());
-    
-    return await fetch(`${API_URL}/Nombre_vecino/${sub.Nombre_vecino}?sheet=Suscripciones`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { Plan: nuevoPlan } })
-    });
-}
-
-// HU4: Asignar Pedido a Repartidor
-async function asignarRepartidor(idPedido, idRepartidor) {
-    return await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: { ID_Repartidor: idRepartidor, Estado_Entrega: "En Camino" } })
-    });
-}
+// 4. Polling cada 60 segundos (antes era 10s, se agotaba el límite de SheetDB)
+setInterval(revisarNuevosPedidosAutomatizado, 60000);

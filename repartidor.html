@@ -33,6 +33,7 @@
     <div id="listado-pedidos-libres">
         <p class="text-muted">Buscando pedidos disponibles...</p>
     </div>
+                
 </section>
         </main>
     </div>
@@ -43,34 +44,57 @@
         const MI_ID_REPARTIDOR = "R001"; 
 
         async function cargarPedidosRepartidor() {
-            const container = document.getElementById('listado-pedidos-repartidor');
-            try {
-                const todosLosPedidos = await obtenerPedidos();
-                const misPedidos = todosLosPedidos.filter(p => p.ID_Repartidor === MI_ID_REPARTIDOR && p.Estado_Entrega !== 'Entregado');
+    const containerMisPedidos = document.getElementById('listado-pedidos-repartidor');
+    const containerLibres = document.getElementById('listado-pedidos-libres');
+    
+    const todosLosPedidos = await obtenerPedidos();
+    
+    // Filtro 1: Pedidos que ya me asignaron
+    const misPedidos = todosLosPedidos.filter(p => p.ID_Repartidor === MI_ID_REPARTIDOR && p.Estado_Entrega !== 'Entregado');
+    
+    // Filtro 2: Pedidos sin dueño (o con ID vacío)
+    const pedidosLibres = todosLosPedidos.filter(p => (!p.ID_Repartidor || p.ID_Repartidor === "") && p.Estado_Entrega === 'Pendiente');
 
-                if (misPedidos.length === 0) {
-                    container.innerHTML = '<p>No tienes pedidos activos en este momento.</p>';
-                    return;
-                }
-
-                container.innerHTML = misPedidos.map(p => `
-                    <div class="card mb-2" style="padding:15px;">
-                        <h3>${p.Nombre_Plato}</h3>
-                        <p>Cliente: ${p.Nombre_Cliente}</p>
-                        <p><strong>ETA:</strong> ${p.Hora_Entrega || 'Por definir'}</p>
-                        <button class="btn-primary" onclick="marcarEntregado('${p.ID_Pedido}')">Marcar como Entregado</button>
-                    </div>
-                `).join('');
-            } catch (error) {
-                container.innerHTML = '<p>Error al cargar pedidos.</p>';
-            }
-        }
+    // Renderizar Mis Pedidos... (tu código actual)
+    
+    // Renderizar Pedidos Libres
+    containerLibres.innerHTML = pedidosLibres.map(p => `
+        <div class="card mb-2" style="border: 2px solid var(--color-primary); padding:15px;">
+            <h3>${p.Nombre_Plato}</h3>
+            <p>Cliente: ${p.Nombre_Cliente}</p>
+            <button class="btn-primary" onclick="tomarPedido('${p.ID_Pedido}')">Aceptar Pedido</button>
+        </div>
+    `).join('');
+}
 
         async function marcarEntregado(idPedido) {
             await completarEntrega(idPedido, MI_ID_REPARTIDOR);
             alert("¡Pedido entregado con éxito!");
             cargarPedidosRepartidor();
         }
+        async function tomarPedido(idPedido) {
+    // 1. Actualizamos el pedido con el ID del repartidor actual
+    // Usamos el endpoint que ya tienes en script.js
+    try {
+        const res = await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: { 
+                ID_Repartidor: MI_ID_REPARTIDOR,
+                Estado_Entrega: "En Camino"
+            }})
+        });
+        
+        // 2. Marcamos al repartidor como "No Disponible" porque ya está ocupado
+        await actualizarDisponibilidadRepartidor(MI_ID_REPARTIDOR, "No Disponible");
+        document.getElementById('status-repartidor').value = "No Disponible";
+        
+        alert("¡Pedido tomado! Ahora dirígete al restaurante.");
+        cargarPedidosRepartidor(); // Recargar ambas listas
+    } catch (error) {
+        alert("Error al tomar el pedido.");
+    }
+}
 
         async function cambiarMiDisponibilidad() {
             const nuevoEstado = document.getElementById('status-repartidor').value;

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sistema de Estrellas (Star Rating)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .demo-section {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        }
+        .demo-title {
+            font-size: 2rem;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        .demo-subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .example-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); padding: 30px 20px; color: white; border-radius: 12px; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 2.5rem;">⭐ Sistema de Estrellas (Star Rating)</h1>
+            <p style="margin: 10px 0 0; opacity: 0.9;">Demo visual de las nuevas clases CSS para Sprint 4</p>
+        </header>
+
+        <!-- DEMO 1: Star Rating Básico -->
+        <section class="demo-section">
+            <h2 class="demo-title">⭐ Estrellas Llenas</h2>
+            <p class="demo-subtitle">Las estrellas están completamente rellenadas</p>
+            
+            <div class="example-container">
+                <div style="padding: 20px; background: #f8f5f0; border-radius: 12px; border: 1px solid #e0dbd4;">
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                        </div>
+                        <span class="star-rating__count">(245 reseñas)</span>
+                    </div>
+                    <p style="margin-top: 12px; color: #444;">⭐ Excelente - 5.0 estrellas</p>
+                </div>
+
+                <div style="padding: 20px; background: #f8f5f0; border-radius: 12px; border: 1px solid #e0dbd4;">
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star">★</span>
+                        </div>
+                        <span class="star-rating__count">(128 reseñas)</span>
+                    </div>
+                    <p style="margin-top: 12px; color: #444;">📊 Muy Bueno - 4.0 estrellas</p>
+                </div>
+
+                <div style="padding: 20px; background: #f8f5f0; border-radius: 12px; border: 1px solid #e0dbd4;">
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                        </div>
+                        <span class="star-rating__count">(89 reseñas)</span>
+                    </div>
+                    <p style="margin-top: 12px; color: #444;">👍 Bueno - 3.0 estrellas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEMO 2: Star Rating con Texto Descriptivo -->
+        <section class="demo-section">
+            <h2 class="demo-title">✍️ Con Descripción</h2>
+            <p class="demo-subtitle">Combinado con texto descriptivo</p>
+            
+            <div style="padding: 20px; background: #f8f5f0; border-radius: 12px; border: 1px solid #e0dbd4; max-width: 500px;">
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 8px; color: #1a1a2e;">Pica Pica Delivery</h3>
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                        </div>
+                        <span class="star-rating__text">Excelente servicio</span>
+                        <span class="star-rating__count">(1,250 reseñas)</span>
+                    </div>
+                    <p style="color: #888; margin: 12px 0 0; font-size: 0.9rem;">Entrega rápida y comida deliciosa. Muy recomendado. ✅</p>
+                </div>
+
+                <div style="border-top: 1px solid #e0dbd4; padding-top: 20px;">
+                    <h3 style="margin: 0 0 8px; color: #1a1a2e;">Restaurante La Paz</h3>
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star">★</span>
+                        </div>
+                        <span class="star-rating__text">Muy buena calidad</span>
+                        <span class="star-rating__count">(856 reseñas)</span>
+                    </div>
+                    <p style="color: #888; margin: 12px 0 0; font-size: 0.9rem;">Buena comida, pero a veces se demora un poco.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEMO 3: Interactive Star Rating -->
+        <section class="demo-section">
+            <h2 class="demo-title">🎯 Interactivo (Hover)</h2>
+            <p class="demo-subtitle">Pasa el mouse sobre las estrellas para ver el efecto</p>
+            
+            <div style="padding: 20px; background: #f8f5f0; border-radius: 12px; border: 1px solid #e0dbd4; max-width: 500px;">
+                <h3 style="margin: 0 0 8px; color: #1a1a2e;">¿Cómo fue tu experiencia?</h3>
+                <p style="color: #888; margin: 0 0 20px; font-size: 0.9rem;">Pasa el mouse sobre las estrellas para calificar</p>
+                <div class="star-rating">
+                    <div class="star-rating__stars">
+                        <span class="star-rating__star">★</span>
+                        <span class="star-rating__star">★</span>
+                        <span class="star-rating__star">★</span>
+                        <span class="star-rating__star">★</span>
+                        <span class="star-rating__star">★</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DEMO 4: Diferentes Variantes -->
+        <section class="demo-section">
+            <h2 class="demo-title">🎨 Variantes de Calificación</h2>
+            <p class="demo-subtitle">Diferentes niveles de satisfacción</p>
+            
+            <div class="example-container">
+                <div style="padding: 20px; background: #fff3e0; border-radius: 12px; border: 1px solid #f0c47c;">
+                    <h4 style="margin: 0 0 12px; color: #d96a0d;">⚠️ Necesita Mejorar</h4>
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                        </div>
+                        <span class="star-rating__count">(42 reseñas)</span>
+                    </div>
+                </div>
+
+                <div style="padding: 20px; background: #fdecea; border-radius: 12px; border: 1px solid #f5b7b1;">
+                    <h4 style="margin: 0 0 12px; color: #c0392b;">❌ Malo</h4>
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                            <span class="star-rating__star">★</span>
+                        </div>
+                        <span class="star-rating__count">(12 reseñas)</span>
+                    </div>
+                </div>
+
+                <div style="padding: 20px; background: #e8f8ef; border-radius: 12px; border: 1px solid #27ae60;">
+                    <h4 style="margin: 0 0 12px; color: #27ae60;">✅ Excelente</h4>
+                    <div class="star-rating">
+                        <div class="star-rating__stars">
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                            <span class="star-rating__star filled">★</span>
+                        </div>
+                        <span class="star-rating__count">(892 reseñas)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Información de Implementación -->
+        <section class="demo-section" style="background: #e8f8ef; border-left: 4px solid #27ae60;">
+            <h3 style="color: #27ae60; margin-top: 0;">✅ Clases CSS Implementadas</h3>
+            <pre style="background: #fff; padding: 15px; border-radius: 8px; overflow-x: auto;"><code>.star-rating
+.star-rating__stars
+.star-rating__star
+.star-rating__star.filled
+.star-rating__star.half
+.star-rating__text
+.star-rating__count</code></pre>
+            <p style="color: #444; margin-bottom: 0;">Todas las clases están disponibles en <strong>style.css</strong> para que el equipo frontend las use en sus componentes.</p>
+        </section>
+    </div>
+</body>
+</html>

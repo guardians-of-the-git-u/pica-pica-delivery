@@ -475,6 +475,230 @@ p {
 }
 
 /* ============================================
+   SISTEMA DE ESTRELLAS (Star Rating)
+   ============================================ */
+.star-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.star-rating__stars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.star-rating__star {
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.15s ease, transform 0.1s ease;
+  line-height: 1;
+}
+
+.star-rating__star.filled {
+  color: var(--color-action);
+}
+
+.star-rating__star.half {
+  background: linear-gradient(90deg, var(--color-action) 50%, #ddd 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.star-rating__star:hover {
+  transform: scale(1.1);
+}
+
+.star-rating__text {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.star-rating__count {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+/* ============================================
+   TARJETAS DE REPORTES (Report Card)
+   ============================================ */
+.report-card {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.report-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.report-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.report-card__icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.375rem;
+}
+
+.report-card__icon-box--complaint {
+  background-color: #ffe8e8;
+  color: #c0392b;
+}
+
+.report-card__icon-box--issue {
+  background-color: #fff3e0;
+  color: #d96a0d;
+}
+
+.report-card__icon-box--quality {
+  background-color: #f0f4ff;
+  color: #3b5bdb;
+}
+
+.report-card__icon-box--other {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.report-card__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-heading);
+  margin: 0 0 4px 0;
+}
+
+.report-card__type {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.report-card__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.report-card__status--pending {
+  background-color: #fff3e0;
+  color: #d96a0d;
+}
+
+.report-card__status--resolved {
+  background-color: #e8f8ef;
+  color: #1a7d47;
+}
+
+.report-card__status--rejected {
+  background-color: #ffe8e8;
+  color: #c0392b;
+}
+
+.report-card__content {
+  margin-bottom: 12px;
+}
+
+.report-card__description {
+  font-size: 0.8125rem;
+  color: var(--color-text-body);
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+}
+
+.report-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-card__detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.report-card__detail-label {
+  font-weight: 600;
+  color: var(--color-text-body);
+  min-width: 70px;
+}
+
+.report-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.report-card__date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.report-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.report-card__btn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.report-card__btn--view {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.report-card__btn--view:hover {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.report-card__btn--delete {
+  background-color: #ffe8e8;
+  color: #c0392b;
+}
+
+.report-card__btn--delete:hover {
+  background-color: #f5c6cb;
+}
+
+/* ============================================
    CHIPS DE CATEGORÍA
    ============================================ */
 .chip-list {
@@ -656,32 +880,53 @@ p {
    ============================================ */
 .notification-banner {
   display: none;
-  position: fixed; /* Lo saca del flujo normal */
-  top: 20px;       /* Lo coloca arriba */
+  position: fixed;
+  top: 20px;
   left: 16px;
   right: 16px;
-  z-index: 1000;   /* Asegura que esté por encima de todo */
+  z-index: 1000;
   
-  /* Mantén tus estilos originales */
   align-items: center;
   gap: 14px;
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 12px 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* Sombra un poco más marcada */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   animation: slideDown 0.4s ease-out;
 }
 
-/* Usaremos una animación de entrada más natural */
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ✅ NUEVA CLASE .show PARA MOSTRAR LA NOTIFICACIÓN */
 .notification-banner.show {
   display: flex;
+}
+
+.notification-banner.success {
+  border-color: var(--color-primary);
+}
+
+.notification-banner.success .notification-banner__icon-box {
+  background-color: var(--color-primary-light);
+}
+
+.notification-banner.error {
+  border-color: #c0392b;
+}
+
+.notification-banner.error .notification-banner__icon-box {
+  background-color: #ffe8e8;
+}
+
+.notification-banner.warning {
+  border-color: #d96a0d;
+}
+
+.notification-banner.warning .notification-banner__icon-box {
+  background-color: #fff3e0;
 }
 
 .notification-banner__icon-box {
@@ -691,12 +936,17 @@ p {
   overflow: hidden;
   flex-shrink: 0;
   background-color: var(--color-primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
 }
 
 .notification-banner__content {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
 }
 
 .notification-banner__title {
@@ -710,4 +960,22 @@ p {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   margin: 0;
+}
+
+.notification-banner__close {
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: color 0.15s ease;
+}
+
+.notification-banner__close:hover {
+  color: var(--color-text-heading);
 }

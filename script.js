@@ -101,14 +101,12 @@ async function eliminarPlato(id) {
 // PEDIDOS
 // =====================
 
-// Obtener todos los pedidos
 async function obtenerPedidos() {
   const res = await fetch(`${API_URL}?sheet=Pedidos`);
   const data = await res.json();
   return data;
 }
 
-// Crear un nuevo pedido
 async function crearPedido(pedido) {
   const res = await fetch(`${API_URL}?sheet=Pedidos`, {
     method: "POST",
@@ -118,7 +116,6 @@ async function crearPedido(pedido) {
   return await res.json();
 }
 
-// Actualizar estado de un pedido
 async function actualizarEstadoPedido(idPedido, nuevoEstado) {
   const res = await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
     method: "PUT",
@@ -162,14 +159,12 @@ async function cargarResumenPedidos() {
 // SUSCRIPCIONES
 // =====================
 
-// Obtener todas las suscripciones
 async function obtenerSuscripciones() {
   const res = await fetch(`${API_URL}?sheet=Suscripciones`);
   const data = await res.json();
   return data;
 }
 
-// Registrar nueva suscripción (incluye Estado y Plan_ID)
 async function registrarSuscripcion(sub) {
   const res = await fetch(`${API_URL}?sheet=Suscripciones`, {
     method: "POST",
@@ -353,23 +348,18 @@ async function actualizarDisponibilidadRepartidor(idRepartidor, nuevoEstado) {
 
 // =============================================
 // HU11: Calificaciones de Almuerzos
-// Hoja: "Calificaciones"
-// Columnas: ID_Calificacion, Nombre_Cliente, Nombre_Plato, Calificacion, Comentario, Fecha
 // =============================================
 
-// Obtener todas las calificaciones
 async function obtenerCalificaciones() {
   const res = await fetch(`${API_URL}?sheet=Calificaciones`);
   return await res.json();
 }
 
-// Obtener calificaciones de un plato específico
 async function obtenerCalificacionesPorPlato(nombrePlato) {
   const res = await fetch(`${API_URL}/search?Nombre_Plato=${encodeURIComponent(nombrePlato)}&sheet=Calificaciones`);
   return await res.json();
 }
 
-// Registrar nueva calificación (1 a 5 estrellas + comentario)
 async function registrarCalificacion(nombreCliente, nombrePlato, calificacion, comentario) {
   if (calificacion < 1 || calificacion > 5) {
     alert("La calificación debe ser entre 1 y 5.");
@@ -395,7 +385,6 @@ async function registrarCalificacion(nombreCliente, nombrePlato, calificacion, c
   return await res.json();
 }
 
-// Calcular promedio de calificación de un plato
 async function obtenerPromedioPlato(nombrePlato) {
   try {
     const calificaciones = await obtenerCalificacionesPorPlato(nombrePlato);
@@ -411,11 +400,9 @@ async function obtenerPromedioPlato(nombrePlato) {
 
 // =============================================
 // HU15: Generar Factura Digital (jsPDF)
-// Requiere: <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 // =============================================
 
 function generarFacturaDigital(pedido) {
-  // Verificar que jsPDF esté cargado
   if (typeof window.jspdf === 'undefined') {
     alert("Error: jsPDF no está cargado. Agregá el script en el HTML.");
     return null;
@@ -424,7 +411,6 @@ function generarFacturaDigital(pedido) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // --- Encabezado ---
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
   doc.text("PICA PICA DELIVERY", 105, 20, { align: "center" });
@@ -433,12 +419,10 @@ function generarFacturaDigital(pedido) {
   doc.setFont("helvetica", "normal");
   doc.text("Comida casera de tu barrio", 105, 28, { align: "center" });
 
-  // Línea separadora
   doc.setDrawColor(46, 125, 50);
   doc.setLineWidth(1);
   doc.line(20, 33, 190, 33);
 
-  // --- Info de Factura ---
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text("FACTURA DIGITAL", 105, 45, { align: "center" });
@@ -453,7 +437,6 @@ function generarFacturaDigital(pedido) {
   doc.text(`Fecha: ${fechaActual}`, 20, 62);
   doc.text(`Hora: ${horaActual}`, 20, 69);
 
-  // --- Datos del Cliente ---
   doc.setDrawColor(200, 200, 200);
   doc.line(20, 75, 190, 75);
 
@@ -466,14 +449,12 @@ function generarFacturaDigital(pedido) {
   doc.text(`Cliente: ${pedido.Nombre_Cliente || "N/A"}`, 20, 93);
   doc.text(`ID Pedido: ${pedido.ID_Pedido || "N/A"}`, 20, 100);
 
-  // --- Detalle del Pedido ---
   doc.line(20, 106, 190, 106);
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.text("Detalle del Pedido", 20, 116);
 
-  // Tabla simple
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("Plato", 20, 126);
@@ -489,19 +470,16 @@ function generarFacturaDigital(pedido) {
 
   doc.line(20, 142, 190, 142);
 
-  // --- Total ---
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.text(`TOTAL: Bs ${pedido.Precio || 0}`, 160, 155, { align: "right" });
 
-  // --- Info de Entrega ---
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(`Estado de entrega: ${pedido.Estado_Entrega || "Pendiente"}`, 20, 170);
   doc.text(`Distancia: ${pedido.Distancia_KM || "N/A"} km`, 20, 177);
   doc.text(`Tiempo estimado: ${pedido.Tiempo_Estimado_Min || "N/A"} min`, 20, 184);
 
-  // --- Pie de página ---
   doc.setDrawColor(46, 125, 50);
   doc.line(20, 260, 190, 260);
 
@@ -511,7 +489,6 @@ function generarFacturaDigital(pedido) {
   doc.text("Santa Cruz, Bolivia | picapicadelivery@gmail.com", 105, 274, { align: "center" });
   doc.text("Este documento es una factura digital generada automáticamente.", 105, 280, { align: "center" });
 
-  // --- Descargar PDF ---
   const nombreArchivo = `Factura_${pedido.Nombre_Cliente || "cliente"}_${pedido.ID_Pedido || "pedido"}.pdf`;
   doc.save(nombreArchivo);
 
@@ -519,7 +496,6 @@ function generarFacturaDigital(pedido) {
   return doc;
 }
 
-// Generar factura desde un ID de pedido (busca en SheetDB)
 async function generarFacturaPorID(idPedido) {
   try {
     const pedidos = await obtenerPedidos();
@@ -540,13 +516,10 @@ async function generarFacturaPorID(idPedido) {
 
 // =============================================
 // HU15: Enviar Factura por Email (EmailJS)
-// Requiere: <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-// Configurar: emailjs.init("TU_PUBLIC_KEY") en el HTML
 // =============================================
 
 async function enviarEmailFactura(emailDestino, pedido) {
   try {
-    // Verificar que EmailJS esté cargado
     if (typeof emailjs === 'undefined') {
       console.warn("EmailJS no está configurado. La factura se descargó pero no se envió por correo.");
       return null;
@@ -562,7 +535,6 @@ async function enviarEmailFactura(emailDestino, pedido) {
       estado: pedido.Estado_Entrega || "Pendiente"
     };
 
-    // service_id y template_id se configuran en emailjs.com
     const resultado = await emailjs.send("service_picapica", "template_factura", parametros);
 
     console.log(`📧 Email enviado a ${emailDestino}`);
@@ -575,7 +547,6 @@ async function enviarEmailFactura(emailDestino, pedido) {
   }
 }
 
-// Función completa: genera PDF + envía por email
 async function facturarYEnviar(idPedido, emailDestino) {
   try {
     const pedidos = await obtenerPedidos();
@@ -586,10 +557,8 @@ async function facturarYEnviar(idPedido, emailDestino) {
       return;
     }
 
-    // 1. Generar PDF (se descarga automáticamente)
     generarFacturaDigital(pedido);
 
-    // 2. Enviar notificación por email
     if (emailDestino) {
       await enviarEmailFactura(emailDestino, pedido);
     }
@@ -600,18 +569,305 @@ async function facturarYEnviar(idPedido, emailDestino) {
   }
 }
 
+// =============================================
+// HU14: Generar Reportes de Pagos y Suscripciones
+// =============================================
+
+// --- 1. Obtener lista de pagos por fecha ---
+// Filtra pedidos entre dos fechas (formato YYYY-MM-DD)
+async function obtenerPagosPorFecha(fechaInicio, fechaFin) {
+  try {
+    const pedidos = await obtenerPedidos();
+    const lista = Array.isArray(pedidos) ? pedidos : [];
+
+    const filtrados = lista.filter(p => {
+      const fecha = p.Fecha || "";
+      return fecha >= fechaInicio && fecha <= fechaFin;
+    });
+
+    // Ordenar por fecha
+    filtrados.sort((a, b) => (a.Fecha || "").localeCompare(b.Fecha || ""));
+
+    console.log(`📊 ${filtrados.length} pagos encontrados entre ${fechaInicio} y ${fechaFin}`);
+    return filtrados;
+  } catch (error) {
+    console.error("Error al obtener pagos:", error);
+    return [];
+  }
+}
+
+// Obtener pagos de hoy
+async function obtenerPagosHoy() {
+  const hoy = new Date().toISOString().slice(0, 10);
+  return await obtenerPagosPorFecha(hoy, hoy);
+}
+
+// --- 2. Calcular totales por semana ---
+// Agrupa pedidos por semana y suma los precios
+async function obtenerTotalesPorSemana(fechaInicio, fechaFin) {
+  try {
+    const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
+    const semanas = {};
+
+    pedidos.forEach(p => {
+      const fecha = new Date(p.Fecha);
+      // Calcular número de semana del año
+      const inicioAnio = new Date(fecha.getFullYear(), 0, 1);
+      const dias = Math.floor((fecha - inicioAnio) / (24 * 60 * 60 * 1000));
+      const numSemana = Math.ceil((dias + inicioAnio.getDay() + 1) / 7);
+      const claveSemana = `Semana ${numSemana} (${fecha.getFullYear()})`;
+
+      if (!semanas[claveSemana]) {
+        semanas[claveSemana] = {
+          semana: claveSemana,
+          totalPedidos: 0,
+          totalIngresos: 0,
+          pedidos: []
+        };
+      }
+
+      semanas[claveSemana].totalPedidos++;
+      semanas[claveSemana].totalIngresos += parseFloat(p.Precio) || 0;
+      semanas[claveSemana].pedidos.push(p);
+    });
+
+    const resultado = Object.values(semanas);
+    console.log("📊 Totales por semana:", resultado);
+    return resultado;
+  } catch (error) {
+    console.error("Error al calcular totales:", error);
+    return [];
+  }
+}
+
+// --- 3. Reporte completo (pagos + suscripciones) ---
+async function generarReporteCompleto(fechaInicio, fechaFin) {
+  try {
+    const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
+    const suscripciones = await obtenerSuscripciones();
+
+    // Filtrar suscripciones por rango de fecha
+    const subsFiltradas = suscripciones.filter(s => {
+      const fecha = s.Fecha || "";
+      return fecha >= fechaInicio && fecha <= fechaFin;
+    });
+
+    const totalIngresosPedidos = pedidos.reduce((sum, p) => sum + (parseFloat(p.Precio) || 0), 0);
+    const totalSuscripciones = subsFiltradas.length;
+    const susActivas = subsFiltradas.filter(s => s.Estado_Suscripcion === "Activo").length;
+    const susPausadas = subsFiltradas.filter(s => s.Estado_Suscripcion === "Pausado").length;
+
+    const reporte = {
+      periodo: `${fechaInicio} a ${fechaFin}`,
+      pedidos: {
+        total: pedidos.length,
+        ingresos: totalIngresosPedidos,
+        detalle: pedidos
+      },
+      suscripciones: {
+        total: totalSuscripciones,
+        activas: susActivas,
+        pausadas: susPausadas,
+        detalle: subsFiltradas
+      }
+    };
+
+    console.log("📊 Reporte completo:", reporte);
+    return reporte;
+  } catch (error) {
+    console.error("Error al generar reporte:", error);
+    return null;
+  }
+}
+
+// --- 4. Exportar reporte a CSV (Excel) ---
+async function exportarReporteExcel(fechaInicio, fechaFin) {
+  try {
+    const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
+
+    if (pedidos.length === 0) {
+      alert("No hay datos para exportar en ese rango de fechas.");
+      return;
+    }
+
+    // Encabezados del CSV
+    const encabezados = ["ID_Pedido", "Nombre_Cliente", "Nombre_Plato", "Precio", "Fecha", "Estado", "Estado_Entrega", "ID_Repartidor"];
+    
+    // Filas de datos
+    const filas = pedidos.map(p => 
+      encabezados.map(campo => `"${(p[campo] || '').toString().replace(/"/g, '""')}"`)
+      .join(",")
+    );
+
+    // Fila de totales
+    const totalIngresos = pedidos.reduce((sum, p) => sum + (parseFloat(p.Precio) || 0), 0);
+    filas.push(`"","","TOTAL","${totalIngresos}","","","",""`);
+
+    const csv = [encabezados.join(","), ...filas].join("\n");
+
+    // Descargar archivo
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.setAttribute("download", `Reporte_Pagos_${fechaInicio}_a_${fechaFin}.csv`);
+    enlace.style.display = "none";
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
+
+    console.log(`📥 CSV exportado: ${pedidos.length} pedidos`);
+    alert(`✅ Reporte exportado: ${pedidos.length} pedidos entre ${fechaInicio} y ${fechaFin}`);
+  } catch (error) {
+    console.error("Error al exportar CSV:", error);
+    alert("Error al exportar el reporte.");
+  }
+}
+
+// --- 5. Exportar reporte a PDF ---
+async function exportarReportePDF(fechaInicio, fechaFin) {
+  try {
+    if (typeof window.jspdf === 'undefined') {
+      alert("Error: jsPDF no está cargado.");
+      return;
+    }
+
+    const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
+    const semanas = await obtenerTotalesPorSemana(fechaInicio, fechaFin);
+
+    if (pedidos.length === 0) {
+      alert("No hay datos para exportar en ese rango de fechas.");
+      return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // --- Encabezado ---
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("PICA PICA DELIVERY", 105, 18, { align: "center" });
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Reporte de Pagos y Suscripciones", 105, 25, { align: "center" });
+
+    doc.setDrawColor(46, 125, 50);
+    doc.setLineWidth(1);
+    doc.line(20, 30, 190, 30);
+
+    // --- Info del reporte ---
+    doc.setFontSize(10);
+    doc.text(`Periodo: ${fechaInicio} a ${fechaFin}`, 20, 40);
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString("es-BO")}`, 20, 47);
+    doc.text(`Total de pedidos: ${pedidos.length}`, 20, 54);
+
+    const totalIngresos = pedidos.reduce((sum, p) => sum + (parseFloat(p.Precio) || 0), 0);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`INGRESOS TOTALES: Bs ${totalIngresos.toFixed(2)}`, 20, 67);
+
+    // --- Totales por semana ---
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, 73, 190, 73);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Totales por Semana", 20, 82);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text("Semana", 20, 90);
+    doc.text("Pedidos", 100, 90);
+    doc.text("Ingresos (Bs)", 150, 90);
+    doc.line(20, 93, 190, 93);
+
+    doc.setFont("helvetica", "normal");
+    let yPos = 100;
+
+    semanas.forEach(s => {
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(s.semana, 20, yPos);
+      doc.text(String(s.totalPedidos), 100, yPos);
+      doc.text(`Bs ${s.totalIngresos.toFixed(2)}`, 150, yPos);
+      yPos += 7;
+    });
+
+    // --- Detalle de pedidos ---
+    yPos += 5;
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, yPos, 190, yPos);
+    yPos += 10;
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Detalle de Pedidos", 20, yPos);
+    yPos += 10;
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text("Fecha", 20, yPos);
+    doc.text("Cliente", 50, yPos);
+    doc.text("Plato", 95, yPos);
+    doc.text("Precio", 145, yPos);
+    doc.text("Estado", 170, yPos);
+    doc.line(20, yPos + 2, 190, yPos + 2);
+    yPos += 8;
+
+    doc.setFont("helvetica", "normal");
+    pedidos.forEach(p => {
+      if (yPos > 280) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.text(p.Fecha || "", 20, yPos);
+      doc.text((p.Nombre_Cliente || "").substring(0, 18), 50, yPos);
+      doc.text((p.Nombre_Plato || "").substring(0, 20), 95, yPos);
+      doc.text(`Bs ${p.Precio || 0}`, 145, yPos);
+      doc.text((p.Estado_Entrega || "Pendiente").substring(0, 12), 170, yPos);
+      yPos += 6;
+    });
+
+    // --- Pie de página ---
+    doc.setDrawColor(46, 125, 50);
+    const ultimaPagina = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= ultimaPagina; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Pica Pica Delivery - Reporte generado automáticamente", 105, 290, { align: "center" });
+      doc.text(`Página ${i} de ${ultimaPagina}`, 190, 290, { align: "right" });
+    }
+
+    const nombreArchivo = `Reporte_Pagos_${fechaInicio}_a_${fechaFin}.pdf`;
+    doc.save(nombreArchivo);
+
+    console.log(`📄 Reporte PDF generado: ${nombreArchivo}`);
+    alert(`✅ Reporte PDF generado: ${pedidos.length} pedidos`);
+  } catch (error) {
+    console.error("Error al generar reporte PDF:", error);
+    alert("Error al generar el reporte PDF.");
+  }
+}
+
 
 // =====================
 // EJEMPLO DE USO - GUÍA PARA EL FRONTEND
 // =====================
 //
-// // HU2 - Pausar suscripción:
-// actualizarEstadoSuscripcion("Virgilio", "Pausado");
-//
-// // HU2 - Alternar estado:
+// // HU2 - Pausar/reanudar suscripción:
 // toggleSuscripcion("Virgilio");
 //
-// // HU4 - Asignar repartidor AUTOMÁTICO:
+// // HU4 - Asignar repartidor automático:
 // const info = await asignarRepartidorAutomatico("P123456", 2.5);
 //
 // // HU6 - Calcular tiempo:
@@ -621,13 +877,15 @@ async function facturarYEnviar(idPedido, emailDestino) {
 // // HU11 - Calificar un almuerzo:
 // registrarCalificacion("Juan", "Majadito", 5, "Excelente sabor");
 //
-// // HU11 - Ver promedio de un plato:
-// const promedio = await obtenerPromedioPlato("Majadito"); // → "4.5"
+// // HU14 - Reportes:
+// obtenerPagosPorFecha("2026-05-01", "2026-05-31");    // Lista de pagos
+// obtenerTotalesPorSemana("2026-05-01", "2026-05-31"); // Totales por semana
+// exportarReporteExcel("2026-05-01", "2026-05-31");    // Descargar CSV
+// exportarReportePDF("2026-05-01", "2026-05-31");      // Descargar PDF
+// generarReporteCompleto("2026-05-01", "2026-05-31");  // Reporte con suscripciones
 //
-// // HU15 - Generar factura PDF:
+// // HU15 - Factura digital:
 // generarFacturaPorID("P123456");
-//
-// // HU15 - Generar factura + enviar por email:
 // facturarYEnviar("P123456", "cliente@gmail.com");
 //
 
@@ -718,7 +976,6 @@ function mostrarFeedback(mensaje, esError = false) {
   subscriptionFeedback.style.color = esError ? '#d64541' : 'var(--color-text-body)';
 }
 
-// Función mejorada para procesar pedidos desde el menú
 async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
     let nombreCliente = window.usuarioLogueado;
     let precioFinal = window.usuarioLogueado ? 0 : precioOriginal;

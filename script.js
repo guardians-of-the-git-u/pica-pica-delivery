@@ -127,12 +127,13 @@ async function actualizarEstadoPedido(idPedido, nuevoEstado) {
   });
   return await res.json();
 }
+
 // =============================================
-// NUEVA FUNCIÓN: Cargar Resumen de Pedidos
+// Cargar Resumen de Pedidos
 // =============================================
 async function cargarResumenPedidos() {
     const container = document.getElementById('orders-summary-container');
-    if (!container) return; // Si no existe el contenedor, no hacemos nada
+    if (!container) return;
 
     try {
         const pedidos = await obtenerPedidos();
@@ -230,13 +231,10 @@ async function toggleSuscripcion(nombreVecino) {
 
 // =============================================
 // HU6: Cálculo de Tiempo Estimado de Entrega
-// Fórmula: (distancia × min/km según vehículo) + cocina
-// Misael solo llama: calcularTiempoEstimado(2.5)
 // =============================================
 function calcularTiempoEstimado(distanciaKm, vehiculo) {
-  // Bici: ~15 km/h → 4 min/km | Moto: ~30 km/h → 2 min/km
   const tiempoPorKm = (vehiculo === "Moto") ? 2 : 4;
-  const tiempoCocina = 15; // 15 minutos de preparación
+  const tiempoCocina = 15;
   return Math.ceil((distanciaKm * tiempoPorKm) + tiempoCocina);
 }
 
@@ -244,9 +242,7 @@ function calcularTiempoEstimado(distanciaKm, vehiculo) {
 // HU4: Asignar repartidor a un pedido (PUT)
 // =============================================
 
-// Asignación manual (el admin elige el repartidor)
 async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
-  // Buscar vehículo del repartidor para calcular tiempo
   let vehiculo = "Bici";
   try {
     const repartidores = await obtenerRepartidores();
@@ -275,12 +271,9 @@ async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
 
 // =============================================
 // HU4: Simulador de Cercanía (asignación automática)
-// Busca el primer repartidor Disponible y lo asigna.
-// El frontend solo llama: asignarRepartidorAutomatico(idPedido, distanciaKM)
 // =============================================
 async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
   try {
-    // 1. Buscar repartidores disponibles
     const disponibles = await obtenerRepartidoresDisponibles();
 
     if (!disponibles || disponibles.length === 0) {
@@ -288,14 +281,9 @@ async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
       return null;
     }
 
-    // 2. Seleccionar el primer repartidor disponible
-    //    (simula cercanía: el más cercano es el primero de la lista)
     const elegido = disponibles[0];
-
-    // 3. Calcular tiempo estimado según su vehículo
     const tiempoEstimado = calcularTiempoEstimado(distanciaKM, elegido.Vehiculo);
 
-    // 4. Actualizar el pedido en la hoja Pedidos
     await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -309,12 +297,10 @@ async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
       })
     });
 
-    // 5. Marcar repartidor como ocupado
     await actualizarDisponibilidadRepartidor(elegido.ID_Repartidor, "No Disponible");
 
     console.log(`✅ ${elegido.Nombre} (${elegido.Vehiculo}) asignado al pedido ${idPedido} - ${tiempoEstimado} min`);
 
-    // 6. Retornar info para que el frontend la muestre
     return {
       repartidor: elegido.Nombre,
       vehiculo: elegido.Vehiculo,
@@ -327,7 +313,6 @@ async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
   }
 }
 
-// Actualizar solo el estado de entrega
 async function actualizarEstadoEntrega(idPedido, nuevoEstado) {
   const res = await fetch(`${API_URL}/ID_Pedido/${idPedido}?sheet=Pedidos`, {
     method: "PUT",
@@ -337,7 +322,6 @@ async function actualizarEstadoEntrega(idPedido, nuevoEstado) {
   return await res.json();
 }
 
-// Completar entrega y liberar repartidor
 async function completarEntrega(idPedido, idRepartidor) {
   await actualizarEstadoEntrega(idPedido, "Entregado");
   await actualizarDisponibilidadRepartidor(idRepartidor, "Disponible");
@@ -367,6 +351,255 @@ async function actualizarDisponibilidadRepartidor(idRepartidor, nuevoEstado) {
   return await res.json();
 }
 
+// =============================================
+// HU11: Calificaciones de Almuerzos
+// Hoja: "Calificaciones"
+// Columnas: ID_Calificacion, Nombre_Cliente, Nombre_Plato, Calificacion, Comentario, Fecha
+// =============================================
+
+// Obtener todas las calificaciones
+async function obtenerCalificaciones() {
+  const res = await fetch(`${API_URL}?sheet=Calificaciones`);
+  return await res.json();
+}
+
+// Obtener calificaciones de un plato específico
+async function obtenerCalificacionesPorPlato(nombrePlato) {
+  const res = await fetch(`${API_URL}/search?Nombre_Plato=${encodeURIComponent(nombrePlato)}&sheet=Calificaciones`);
+  return await res.json();
+}
+
+// Registrar nueva calificación (1 a 5 estrellas + comentario)
+async function registrarCalificacion(nombreCliente, nombrePlato, calificacion, comentario) {
+  if (calificacion < 1 || calificacion > 5) {
+    alert("La calificación debe ser entre 1 y 5.");
+    return null;
+  }
+
+  const nuevaCalificacion = {
+    ID_Calificacion: "CAL" + Date.now().toString().slice(-6),
+    Nombre_Cliente: nombreCliente,
+    Nombre_Plato: nombrePlato,
+    Calificacion: calificacion,
+    Comentario: comentario || "",
+    Fecha: new Date().toISOString().slice(0, 10)
+  };
+
+  const res = await fetch(`${API_URL}?sheet=Calificaciones`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data: [nuevaCalificacion] })
+  });
+
+  console.log(`⭐ Calificación registrada: ${nombrePlato} - ${calificacion}/5`);
+  return await res.json();
+}
+
+// Calcular promedio de calificación de un plato
+async function obtenerPromedioPlato(nombrePlato) {
+  try {
+    const calificaciones = await obtenerCalificacionesPorPlato(nombrePlato);
+    if (!calificaciones || calificaciones.length === 0) return 0;
+
+    const suma = calificaciones.reduce((acc, c) => acc + parseInt(c.Calificacion), 0);
+    return (suma / calificaciones.length).toFixed(1);
+  } catch (error) {
+    console.error("Error al obtener promedio:", error);
+    return 0;
+  }
+}
+
+// =============================================
+// HU15: Generar Factura Digital (jsPDF)
+// Requiere: <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+// =============================================
+
+function generarFacturaDigital(pedido) {
+  // Verificar que jsPDF esté cargado
+  if (typeof window.jspdf === 'undefined') {
+    alert("Error: jsPDF no está cargado. Agregá el script en el HTML.");
+    return null;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // --- Encabezado ---
+  doc.setFontSize(22);
+  doc.setFont("helvetica", "bold");
+  doc.text("PICA PICA DELIVERY", 105, 20, { align: "center" });
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text("Comida casera de tu barrio", 105, 28, { align: "center" });
+
+  // Línea separadora
+  doc.setDrawColor(46, 125, 50);
+  doc.setLineWidth(1);
+  doc.line(20, 33, 190, 33);
+
+  // --- Info de Factura ---
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("FACTURA DIGITAL", 105, 45, { align: "center" });
+
+  const fechaActual = new Date().toLocaleDateString("es-BO");
+  const horaActual = new Date().toLocaleTimeString("es-BO", { hour: '2-digit', minute: '2-digit' });
+  const numFactura = "FAC-" + Date.now().toString().slice(-8);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`N° Factura: ${numFactura}`, 20, 55);
+  doc.text(`Fecha: ${fechaActual}`, 20, 62);
+  doc.text(`Hora: ${horaActual}`, 20, 69);
+
+  // --- Datos del Cliente ---
+  doc.setDrawColor(200, 200, 200);
+  doc.line(20, 75, 190, 75);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Datos del Cliente", 20, 85);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Cliente: ${pedido.Nombre_Cliente || "N/A"}`, 20, 93);
+  doc.text(`ID Pedido: ${pedido.ID_Pedido || "N/A"}`, 20, 100);
+
+  // --- Detalle del Pedido ---
+  doc.line(20, 106, 190, 106);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("Detalle del Pedido", 20, 116);
+
+  // Tabla simple
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Plato", 20, 126);
+  doc.text("Cantidad", 110, 126);
+  doc.text("Precio", 160, 126);
+
+  doc.line(20, 129, 190, 129);
+
+  doc.setFont("helvetica", "normal");
+  doc.text(pedido.Nombre_Plato || "N/A", 20, 137);
+  doc.text("1", 110, 137);
+  doc.text(`Bs ${pedido.Precio || 0}`, 160, 137);
+
+  doc.line(20, 142, 190, 142);
+
+  // --- Total ---
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(`TOTAL: Bs ${pedido.Precio || 0}`, 160, 155, { align: "right" });
+
+  // --- Info de Entrega ---
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Estado de entrega: ${pedido.Estado_Entrega || "Pendiente"}`, 20, 170);
+  doc.text(`Distancia: ${pedido.Distancia_KM || "N/A"} km`, 20, 177);
+  doc.text(`Tiempo estimado: ${pedido.Tiempo_Estimado_Min || "N/A"} min`, 20, 184);
+
+  // --- Pie de página ---
+  doc.setDrawColor(46, 125, 50);
+  doc.line(20, 260, 190, 260);
+
+  doc.setFontSize(8);
+  doc.setTextColor(100, 100, 100);
+  doc.text("Pica Pica Delivery - Comida casera ultra local", 105, 268, { align: "center" });
+  doc.text("Santa Cruz, Bolivia | picapicadelivery@gmail.com", 105, 274, { align: "center" });
+  doc.text("Este documento es una factura digital generada automáticamente.", 105, 280, { align: "center" });
+
+  // --- Descargar PDF ---
+  const nombreArchivo = `Factura_${pedido.Nombre_Cliente || "cliente"}_${pedido.ID_Pedido || "pedido"}.pdf`;
+  doc.save(nombreArchivo);
+
+  console.log(`📄 Factura generada: ${nombreArchivo}`);
+  return doc;
+}
+
+// Generar factura desde un ID de pedido (busca en SheetDB)
+async function generarFacturaPorID(idPedido) {
+  try {
+    const pedidos = await obtenerPedidos();
+    const pedido = pedidos.find(p => String(p.ID_Pedido) === String(idPedido));
+
+    if (!pedido) {
+      alert("No se encontró el pedido con ese ID.");
+      return;
+    }
+
+    generarFacturaDigital(pedido);
+    alert(`✅ Factura generada para el pedido ${idPedido}`);
+  } catch (error) {
+    console.error("Error al generar factura:", error);
+    alert("Error al generar la factura.");
+  }
+}
+
+// =============================================
+// HU15: Enviar Factura por Email (EmailJS)
+// Requiere: <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+// Configurar: emailjs.init("TU_PUBLIC_KEY") en el HTML
+// =============================================
+
+async function enviarEmailFactura(emailDestino, pedido) {
+  try {
+    // Verificar que EmailJS esté cargado
+    if (typeof emailjs === 'undefined') {
+      console.warn("EmailJS no está configurado. La factura se descargó pero no se envió por correo.");
+      return null;
+    }
+
+    const parametros = {
+      to_email: emailDestino,
+      to_name: pedido.Nombre_Cliente || "Cliente",
+      pedido_id: pedido.ID_Pedido || "N/A",
+      plato: pedido.Nombre_Plato || "N/A",
+      precio: pedido.Precio || "0",
+      fecha: pedido.Fecha || new Date().toISOString().slice(0, 10),
+      estado: pedido.Estado_Entrega || "Pendiente"
+    };
+
+    // service_id y template_id se configuran en emailjs.com
+    const resultado = await emailjs.send("service_picapica", "template_factura", parametros);
+
+    console.log(`📧 Email enviado a ${emailDestino}`);
+    alert(`✅ Factura enviada a ${emailDestino}`);
+    return resultado;
+  } catch (error) {
+    console.error("Error al enviar email:", error);
+    alert("❌ No se pudo enviar el email. La factura se descargó localmente.");
+    return null;
+  }
+}
+
+// Función completa: genera PDF + envía por email
+async function facturarYEnviar(idPedido, emailDestino) {
+  try {
+    const pedidos = await obtenerPedidos();
+    const pedido = pedidos.find(p => String(p.ID_Pedido) === String(idPedido));
+
+    if (!pedido) {
+      alert("No se encontró el pedido.");
+      return;
+    }
+
+    // 1. Generar PDF (se descarga automáticamente)
+    generarFacturaDigital(pedido);
+
+    // 2. Enviar notificación por email
+    if (emailDestino) {
+      await enviarEmailFactura(emailDestino, pedido);
+    }
+
+    console.log(`✅ Pedido ${idPedido} facturado y enviado.`);
+  } catch (error) {
+    console.error("Error en facturación:", error);
+  }
+}
+
 
 // =====================
 // EJEMPLO DE USO - GUÍA PARA EL FRONTEND
@@ -378,20 +611,24 @@ async function actualizarDisponibilidadRepartidor(idRepartidor, nuevoEstado) {
 // // HU2 - Alternar estado:
 // toggleSuscripcion("Virgilio");
 //
-// // HU4 - Asignar repartidor AUTOMÁTICO (distancia 2.5 km):
-// const info = await asignarRepartidorAutomatico("1778377164161", 2.5);
-// // info = { repartidor: "Luis Mamani", vehiculo: "Bici", tiempoEstimado: 25 }
+// // HU4 - Asignar repartidor AUTOMÁTICO:
+// const info = await asignarRepartidorAutomatico("P123456", 2.5);
 //
-// // HU4 - Asignar MANUAL:
-// asignarRepartidor("1778377164161", "R001", 2.5);
+// // HU6 - Calcular tiempo:
+// calcularTiempoEstimado(2.5);          // → 25 min (bici)
+// calcularTiempoEstimado(2.5, "Moto");  // → 20 min (moto)
 //
-// // HU6 - Calcular tiempo (para mostrar en pantalla):
-// calcularTiempoEstimado(1.2);          // → 20 min (bici, default)
-// calcularTiempoEstimado(1.2, "Moto");  // → 18 min (moto)
-// calcularTiempoEstimado(3.0);          // → 27 min (bici)
+// // HU11 - Calificar un almuerzo:
+// registrarCalificacion("Juan", "Majadito", 5, "Excelente sabor");
 //
-// // Completar entrega y liberar repartidor:
-// completarEntrega("1778377164161", "R001");
+// // HU11 - Ver promedio de un plato:
+// const promedio = await obtenerPromedioPlato("Majadito"); // → "4.5"
+//
+// // HU15 - Generar factura PDF:
+// generarFacturaPorID("P123456");
+//
+// // HU15 - Generar factura + enviar por email:
+// facturarYEnviar("P123456", "cliente@gmail.com");
 //
 
 
@@ -491,14 +728,10 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         if (!nombreCliente) return;
     }
 
-    // Obtener hora actual
     const ahora = new Date();
     const horaActual = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
 
-    // Generar distancia aleatoria (entre 1-6 km)
     const distanciaAleatoria = (Math.random() * 5 + 1).toFixed(1);
-
-    // Calcular tiempo estimado
     const tiempoEstimado = calcularTiempoEstimado(parseFloat(distanciaAleatoria));
 
     const nuevoPedido = {
@@ -521,11 +754,9 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         await crearPedido(nuevoPedido);
         alert(`✅ ¡Pedido realizado!\n${nombrePlato}\nPrecio: Bs ${precioFinal}\nTiempo estimado: ${tiempoEstimado} min`);
         
-        // Actualizar interfaz
         if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
         if(typeof renderTracking === 'function') renderTracking();
         
-        // Disparar notificación
         if(typeof dispararNotificacion === 'function') {
             dispararNotificacion(
                 "🎉 ¡Pedido Confirmado!",
@@ -630,13 +861,10 @@ if (addDishForm) {
     });
 }
 
-/*notificacion*/
-
 // ============================================
-// SISTEMA DE NOTIFICACIONES EN TIEMPO REAL (POLLING)
+// SISTEMA DE NOTIFICACIONES (POLLING)
 // ============================================
 
-// 1. Función global para activar visualmente el banner
 function dispararNotificacion(titulo, texto) {
     const banner = document.querySelector('.notification-banner');
     const bannerTitle = document.querySelector('.notification-banner__title');
@@ -652,10 +880,8 @@ function dispararNotificacion(titulo, texto) {
     }
 }
 
-// 2. Guardamos el estado de los pedidos para comparar cambios
 let totalPedidosConocidos = -1;
 
-// 3. Función de fondo que consulta a SheetDB automáticamente
 async function revisarNuevosPedidosAutomatizado() {
     try {
         const pedidos = await obtenerPedidos();
@@ -688,6 +914,7 @@ async function revisarNuevosPedidosAutomatizado() {
         console.error("Error en el monitoreo en segundo plano:", error);
     }
 }
+
 // ============================================
 // FUNCIONES DE APOYO (REQUERIDAS POR EL HTML)
 // ============================================
@@ -704,7 +931,6 @@ function formatHora(hora) {
 }
 
 function calcularTiempoEntrega(distancia) {
-    // Si no hay distancia, estimamos 30 min por defecto
     return distancia ? Math.ceil((distancia * 4) + 15) : 30;
 }
 
@@ -729,5 +955,6 @@ function agruparPorHora(pedidos) {
         return grupos;
     }, {});
 }
-// 4. Polling cada 60 segundos (antes era 10s, se agotaba el límite de SheetDB)
+
+// Polling cada 100 segundos
 setInterval(revisarNuevosPedidosAutomatizado, 100000);

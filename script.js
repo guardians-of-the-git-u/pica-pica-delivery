@@ -1151,3 +1151,75 @@ function agruparPorHora(pedidos) {
 
 // Polling cada 100 segundos
 setInterval(revisarNuevosPedidosAutomatizado, 100000);
+
+// =============================================
+// MODAL DE CALIFICACIÓN (Star Rating interactivo)
+// =============================================
+
+let _califDatos = { cliente: '', plato: '', idPedido: '', valor: 0 };
+
+const _textoEstrellas = ['', 'Malo 😞', 'Regular 😐', 'Bueno 👍', 'Muy bueno 😊', 'Excelente 🌟'];
+
+function abrirModalCalificacion(nombreCliente, nombrePlato, idPedido) {
+  _califDatos = { cliente: nombreCliente, plato: nombrePlato, idPedido: idPedido, valor: 0 };
+
+  document.getElementById('modal-calif-plato').textContent = 'Pedido: ' + nombrePlato;
+  document.getElementById('modal-calif-comentario').value = '';
+  document.getElementById('modal-calif-texto').textContent = '';
+  document.getElementById('btn-confirmar-calif').disabled = true;
+
+  _actualizarEstrellasModal(0);
+
+  const modal = document.getElementById('modal-calificacion');
+  modal.style.display = 'flex';
+
+  // Cerrar al hacer clic fuera del card
+  modal.onclick = function(e) {
+    if (e.target === modal) cerrarModalCalificacion();
+  };
+
+  // Eventos hover y click en estrellas
+  const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
+  estrellas.forEach(function(star) {
+    star.onmouseenter = function() { _actualizarEstrellasModal(parseInt(star.dataset.valor)); };
+    star.onmouseleave = function() { _actualizarEstrellasModal(_califDatos.valor); };
+    star.onclick = function() {
+      _califDatos.valor = parseInt(star.dataset.valor);
+      _actualizarEstrellasModal(_califDatos.valor);
+      document.getElementById('modal-calif-texto').textContent = _textoEstrellas[_califDatos.valor];
+      document.getElementById('btn-confirmar-calif').disabled = false;
+    };
+  });
+}
+
+function _actualizarEstrellasModal(valor) {
+  document.querySelectorAll('#modal-estrellas .star-rating__star').forEach(function(star) {
+    const v = parseInt(star.dataset.valor);
+    star.classList.toggle('filled', v <= valor);
+  });
+}
+
+function cerrarModalCalificacion() {
+  document.getElementById('modal-calificacion').style.display = 'none';
+}
+
+async function confirmarCalificacion() {
+  if (_califDatos.valor < 1) return;
+
+  const comentario = document.getElementById('modal-calif-comentario').value.trim();
+  const btn = document.getElementById('btn-confirmar-calif');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    await registrarCalificacion(_califDatos.cliente, _califDatos.plato, _califDatos.valor, comentario);
+    cerrarModalCalificacion();
+    alert('¡Gracias por tu calificación! (' + _califDatos.valor + '/5)');
+    if (typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
+  } catch (error) {
+    console.error('Error al guardar calificación:', error);
+    alert('Hubo un error al guardar. Intenta de nuevo.');
+    btn.disabled = false;
+    btn.textContent = 'Confirmar';
+  }
+}

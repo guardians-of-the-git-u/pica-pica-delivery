@@ -449,5 +449,38 @@
         if (planSelect) planSelect.addEventListener('change', handleCambiarPlan);
       });
     </script>
+<!-- MODAL CALIFICACIÓN -->
+<div id="modal-calificacion" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:16px;">
+  <div style="background:#fff; border-radius:var(--radius-lg); padding:28px 24px; max-width:420px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+    <h3 style="margin:0 0 4px; color:var(--color-text-heading); font-size:1.2rem;">🌟 Calificar pedido</h3>
+    <p id="modal-calif-plato" style="color:var(--color-text-muted); margin:0 0 20px; font-size:0.9rem;"></p>
+
+    <!-- Estrellas interactivas -->
+    <div style="margin-bottom:20px;">
+      <p style="font-size:0.85rem; color:var(--color-text-body); margin-bottom:10px; font-weight:500;">¿Cómo calificarías este pedido?</p>
+      <div id="modal-estrellas" class="star-rating__stars" style="gap:10px;">
+        <span class="star-rating__star" style="font-size:2rem;" data-valor="1">★</span>
+        <span class="star-rating__star" style="font-size:2rem;" data-valor="2">★</span>
+        <span class="star-rating__star" style="font-size:2rem;" data-valor="3">★</span>
+        <span class="star-rating__star" style="font-size:2rem;" data-valor="4">★</span>
+        <span class="star-rating__star" style="font-size:2rem;" data-valor="5">★</span>
+      </div>
+      <p id="modal-calif-texto" style="font-size:0.85rem; color:var(--color-action); margin-top:8px; min-height:20px; font-weight:500;"></p>
+    </div>
+
+    <!-- Comentario -->
+    <div style="margin-bottom:24px;">
+      <label style="font-size:0.85rem; font-weight:500; color:var(--color-text-body); display:block; margin-bottom:6px;">Comentario (opcional)</label>
+      <textarea id="modal-calif-comentario" rows="3" placeholder="¿Qué te pareció el pedido?" style="width:100%; padding:10px 12px; border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-main); font-size:0.9rem; resize:none; outline:none; color:var(--color-text-body);"></textarea>
+    </div>
+
+    <!-- Botones -->
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn-outline btn-small" type="button" onclick="cerrarModalCalificacion()">Cancelar</button>
+      <button class="btn-action btn-small" type="button" id="btn-confirmar-calif" onclick="confirmarCalificacion()">Confirmar</button>
+    </div>
+  </div>
+</div>
+    
   </body>
 </html>

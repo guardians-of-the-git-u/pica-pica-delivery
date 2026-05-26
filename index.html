@@ -107,6 +107,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>emailjs.init("krpWacbjY0J_94gjL");</script>
     <script src="script.js"></script>
     <script>
       const ordersSummaryContainer = document.getElementById('orders-summary-container');
@@ -133,14 +134,13 @@
         return `${horas}:${minutos}`;
       }
 
-      // BUSCA ESTA FUNCIÓN EN TU INDEX.HTML Y CÁMBIALA POR ESTA:
-function formatearDuracion(minutos) {
-    // El error era usar 'minutes' en lugar de 'minutos'
-    if (minutos === undefined || minutos === null || isNaN(minutos)) {
-        return 'Por calcular';
-    }
-    return `${minutos} min`;
-}
+      function formatearDuracion(minutos) {
+        if (minutos === undefined || minutos === null || isNaN(minutos)) {
+            return 'Por calcular';
+        }
+        return `${minutos} min`;
+      }
+
       function agruparPorHora(pedidos) {
         return pedidos.reduce((acc, pedido) => {
           const hora = pedido.Hora_Entrega && /^\d{1,2}:\d{2}$/.test(pedido.Hora_Entrega)
@@ -220,51 +220,39 @@ function formatearDuracion(minutos) {
           alert('Error al actualizar el retraso. Intenta de nuevo.');
         }
       }
-      /*funcion notificacion
-      */
 
-      // Función para simular el envío de un pedido desde el Index (Cliente)
-async function simularPedidoCliente(nombrePlato, precioPlato) {
-  // 1. Verificamos si hay un usuario logueado en el sistema
-  // Si no se ha verificado en la sección "¿Tienes Plan Semanal?", usamos un nombre por defecto
-  const cliente = window.usuarioLogueado || "Vecino Anónimo"; 
-  
-  // 2. Armamos el objeto con la estructura exacta que pide tu hoja de Excel/API
-  const nuevoPedido = {
-    ID_Pedido: "P" + Date.now().toString().slice(-6), // Genera un ID corto único
-    Nombre_Cliente: cliente,
-    Nombre_Plato: nombrePlato,
-    Precio: precioPlato,
-    Fecha: new Date().toISOString().slice(0, 10), // Guarda la fecha de hoy: YYYY-MM-DD
-    Hora_Entrega: "Por confirmar",
-    Estado: "Pendiente",
-    Estado_Entrega: "Pendiente",
-    Distancia_KM: (Math.random() * 5 + 1).toFixed(1), // Simula una distancia aleatoria entre 1 y 6 km
-    Tiempo_Estimado_Min: ""
-  };
+      async function simularPedidoCliente(nombrePlato, precioPlato) {
+        const cliente = window.usuarioLogueado || "Vecino Anónimo"; 
+        
+        const nuevoPedido = {
+          ID_Pedido: "P" + Date.now().toString().slice(-6),
+          Nombre_Cliente: cliente,
+          Nombre_Plato: nombrePlato,
+          Precio: precioPlato,
+          Fecha: new Date().toISOString().slice(0, 10),
+          Hora_Entrega: "Por confirmar",
+          Estado: "Pendiente",
+          Estado_Entrega: "Pendiente",
+          Distancia_KM: (Math.random() * 5 + 1).toFixed(1),
+          Tiempo_Estimado_Min: ""
+        };
 
-  try {
-    console.log("Enviando pedido a la base de datos...", nuevoPedido);
-    
-    // 3. Llamamos a tu función nativa de script.js
-    const resultado = await crearPedido(nuevoPedido);
+        try {
+          console.log("Enviando pedido a la base de datos...", nuevoPedido);
+          const resultado = await crearPedido(nuevoPedido);
 
-    if (resultado) {
-      alert(`🎉 ¡Pedido enviado con éxito! Ordenaste: ${nombrePlato}`);
-      
-      // Opcional: Si quieres que el propio cliente vea su alerta en su pantalla al instante
-      if (typeof dispararNotificacion === 'function') {
-        dispararNotificacion("📍 Pedido Registrado", `Tu orden de ${nombrePlato} ha sido enviada.`);
+          if (resultado) {
+            alert(`🎉 ¡Pedido enviado con éxito! Ordenaste: ${nombrePlato}`);
+            if (typeof dispararNotificacion === 'function') {
+              dispararNotificacion("📍 Pedido Registrado", `Tu orden de ${nombrePlato} ha sido enviada.`);
+            }
+            if (typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
+          }
+        } catch (error) {
+          console.error("Error al enviar el pedido:", error);
+          alert("Hubo un error al conectar con SheetDB.");
+        }
       }
-      
-      // Recargamos el resumen de pedidos del index si la función existe
-      if (typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
-    }
-  } catch (error) {
-    console.error("Error al enviar el pedido:", error);
-    alert("Hubo un error al conectar con SheetDB.");
-  }
-}
 
       async function actualizarRetrasoPedido(idPedido, minutesRetraso) {
         const pedidoExistente = pedidosDiarios.find(p => p.ID_Pedido === idPedido || p.ID === idPedido);

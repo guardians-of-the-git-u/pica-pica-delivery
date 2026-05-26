@@ -155,23 +155,7 @@
         }, {});
       }
 
-      function crearEstrellasHTML(calificacion) {
-        if (!calificacion) return `<div class="star-rating" style="margin-top: 8px;"><div class="star-rating__stars"><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span></div><span class="star-rating__count">(Sin valoraciones)</span></div>`;
-        
-        const numCalificacion = parseFloat(calificacion);
-        let estrellas = '';
-        for (let i = 1; i <= 5; i++) {
-          if (i <= Math.floor(numCalificacion)) {
-            estrellas += '<span class="star-rating__star filled">★</span>';
-          } else if (i - 1 < numCalificacion && numCalificacion % 1 !== 0) {
-            estrellas += '<span class="star-rating__star half">★</span>';
-          } else {
-            estrellas += '<span class="star-rating__star">★</span>';
-          }
-        }
-        return `<div class="star-rating" style="margin-top: 8px;"><div class="star-rating__stars">${estrellas}</div><span class="star-rating__count">(${calificacion}/5.0)</span></div>`;
-      }
-
+      
       function construirResumenPedidos(pedidos) {
         if (!pedidos || pedidos.length === 0) {
           return '<p class="text-muted">No hay pedidos para el día de hoy.</p>';

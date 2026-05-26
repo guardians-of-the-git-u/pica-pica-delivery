@@ -478,8 +478,8 @@ p {
    SISTEMA DE ESTRELLAS (Star Rating)
    ============================================ */
 .star-rating {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
@@ -516,12 +516,14 @@ p {
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   font-weight: 500;
+  display: block;
 }
 
 .star-rating__count {
   font-size: 0.75rem;
   color: var(--color-text-muted);
-  margin-left: 4px;
+  margin-left: 0;
+  display: block;
 }
 
 /* ============================================

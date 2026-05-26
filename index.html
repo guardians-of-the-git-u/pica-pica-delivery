@@ -242,7 +242,6 @@
           const resultado = await crearPedido(nuevoPedido);
 
           if (resultado) {
-            alert(`🎉 ¡Pedido enviado con éxito! Ordenaste: ${nombrePlato}`);
             if (typeof dispararNotificacion === 'function') {
               dispararNotificacion("📍 Pedido Registrado", `Tu orden de ${nombrePlato} ha sido enviada.`);
             }

@@ -1,5 +1,5 @@
 // ============================================
-// PICA PICA DELIVERY - Conexión con la API
+// PICA PICA DELIVERY - Conexion con la API
 // Backend: Juan Escalante
 // API: SheetDB + Google Sheets
 // ============================================
@@ -7,13 +7,12 @@
 const API_URL = "https://sheetdb.io/api/v1/k0g0vjejgj9ow";
 
 // =====================
-// MENÚ
+// MENU
 // =====================
 window.usuarioLogueado = null;
 window.suscripcionActual = null;
 window.menuData = [];
 
-// 1. Función para verificar si el usuario es suscriptor
 async function verificarYActivarModo() {
     const nombreInput = document.getElementById('check-user-name').value.trim();
     const msg = document.getElementById('sub-status-msg');
@@ -31,7 +30,7 @@ async function verificarYActivarModo() {
         if (esSuscriptor) {
             if (esSuscriptor.Estado_Suscripcion === "Pausado") {
                 window.usuarioLogueado = null;
-                msg.textContent = "⏸️ Tu suscripción está pausada. Contacta soporte para reactivarla.";
+                msg.textContent = "Tu suscripcion esta pausada. Contacta soporte para reactivarla.";
                 msg.style.color = "#e67e22";
                 renderMenu(window.menuData);
                 return;
@@ -39,14 +38,14 @@ async function verificarYActivarModo() {
 
             window.usuarioLogueado = esSuscriptor.Nombre_vecino;
             window.suscripcionActual = esSuscriptor;
-            msg.textContent = `✅ Plan Semanal Activo. ¡Hola ${window.usuarioLogueado}! Tus platos hoy son gratis.`;
+            msg.textContent = "Plan Semanal Activo. Hola " + window.usuarioLogueado + "! Tus platos hoy son gratis.";
             msg.style.color = "var(--color-primary-dark)";
             renderMenu(window.menuData);
             renderCuenta();
             renderTracking();
         } else {
             window.usuarioLogueado = null;
-            msg.textContent = "❌ No tienes una suscripción activa con ese nombre.";
+            msg.textContent = "No tienes una suscripcion activa con ese nombre.";
             msg.style.color = "#d64541";
             renderMenu(window.menuData);
         }
@@ -55,21 +54,18 @@ async function verificarYActivarModo() {
     }
 }
 
-// Obtener todos los platos del menú
 async function obtenerMenu() {
   const res = await fetch(`${API_URL}?sheet=Menú`);
   const data = await res.json();
   return data;
 }
 
-// Buscar platos por categoría
 async function buscarPorCategoria(categoria) {
   const res = await fetch(`${API_URL}/search?Categoria=${categoria}&sheet=Menú`);
   const data = await res.json();
   return data;
 }
 
-// Agregar un plato al menú
 async function agregarPlato(plato) {
   const res = await fetch(`${API_URL}?sheet=Menú`, {
     method: "POST",
@@ -79,7 +75,6 @@ async function agregarPlato(plato) {
   return await res.json();
 }
 
-// Actualizar un plato por ID
 async function actualizarPlato(id, cambios) {
   const res = await fetch(`${API_URL}/ID/${id}?sheet=Menú`, {
     method: "PUT",
@@ -89,7 +84,6 @@ async function actualizarPlato(id, cambios) {
   return await res.json();
 }
 
-// Eliminar un plato por ID
 async function eliminarPlato(id) {
   const res = await fetch(`${API_URL}/ID/${id}?sheet=Menú`, {
     method: "DELETE"
@@ -125,9 +119,6 @@ async function actualizarEstadoPedido(idPedido, nuevoEstado) {
   return await res.json();
 }
 
-// =============================================
-// Cargar Resumen de Pedidos
-// =============================================
 async function cargarResumenPedidos() {
     const container = document.getElementById('orders-summary-container');
     if (!container) return;
@@ -151,7 +142,7 @@ async function cargarResumenPedidos() {
 
     } catch (error) {
         console.error("Error al cargar el resumen:", error);
-        container.innerHTML = '<p>Error al cargar el resumen. Intenta recargar la página.</p>';
+        container.innerHTML = '<p>Error al cargar el resumen. Intenta recargar la pagina.</p>';
     }
 }
 
@@ -179,7 +170,7 @@ async function registrarSuscripcion(sub) {
 }
 
 // =============================================
-// HU2: Pausar / Reanudar suscripción (PUT)
+// HU2: Pausar / Reanudar suscripcion (PUT)
 // =============================================
 
 async function actualizarEstadoSuscripcion(nombreVecino, nuevoEstado) {
@@ -208,7 +199,7 @@ async function toggleSuscripcion(nombreVecino) {
     );
 
     if (!usuario) {
-      alert("No se encontró la suscripción.");
+      alert("No se encontro la suscripcion.");
       return;
     }
 
@@ -216,16 +207,16 @@ async function toggleSuscripcion(nombreVecino) {
     const nuevoEstado = estadoActual === "Activo" ? "Pausado" : "Activo";
 
     await actualizarEstadoSuscripcion(usuario.Nombre_vecino, nuevoEstado);
-    alert(`Suscripción ${nuevoEstado === "Activo" ? "reactivada ✅" : "pausada ⏸️"}`);
+    alert("Suscripcion " + (nuevoEstado === "Activo" ? "reactivada" : "pausada"));
     return nuevoEstado;
   } catch (error) {
     console.error("Error al cambiar estado:", error);
-    alert("Error al actualizar la suscripción.");
+    alert("Error al actualizar la suscripcion.");
   }
 }
 
 // =============================================
-// HU6: Cálculo de Tiempo Estimado de Entrega
+// HU6: Calculo de Tiempo Estimado de Entrega
 // =============================================
 function calcularTiempoEstimado(distanciaKm, vehiculo) {
   const tiempoPorKm = (vehiculo === "Moto") ? 2 : 4;
@@ -244,7 +235,7 @@ async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
     const rep = repartidores.find(r => r.ID_Repartidor === idRepartidor);
     if (rep) vehiculo = rep.Vehiculo;
   } catch (e) {
-    console.warn("No se pudo verificar vehículo, usando Bici por defecto.");
+    console.warn("No se pudo verificar vehiculo, usando Bici por defecto.");
   }
 
   const tiempoEstimado = calcularTiempoEstimado(distanciaKM, vehiculo);
@@ -264,15 +255,13 @@ async function asignarRepartidor(idPedido, idRepartidor, distanciaKM) {
   return await res.json();
 }
 
-// =============================================
-// HU4: Simulador de Cercanía (asignación automática)
-// =============================================
+// HU4: Simulador de Cercania (asignacion automatica)
 async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
   try {
     const disponibles = await obtenerRepartidoresDisponibles();
 
     if (!disponibles || disponibles.length === 0) {
-      alert("⚠️ No hay repartidores disponibles en este momento.");
+      alert("No hay repartidores disponibles en este momento.");
       return null;
     }
 
@@ -294,7 +283,7 @@ async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
 
     await actualizarDisponibilidadRepartidor(elegido.ID_Repartidor, "No Disponible");
 
-    console.log(`✅ ${elegido.Nombre} (${elegido.Vehiculo}) asignado al pedido ${idPedido} - ${tiempoEstimado} min`);
+    console.log("Repartidor " + elegido.Nombre + " (" + elegido.Vehiculo + ") asignado al pedido " + idPedido + " - " + tiempoEstimado + " min");
 
     return {
       repartidor: elegido.Nombre,
@@ -302,7 +291,7 @@ async function asignarRepartidorAutomatico(idPedido, distanciaKM) {
       tiempoEstimado: tiempoEstimado
     };
   } catch (error) {
-    console.error("Error en asignación automática:", error);
+    console.error("Error en asignacion automatica:", error);
     alert("Error al asignar repartidor.");
     return null;
   }
@@ -320,7 +309,7 @@ async function actualizarEstadoEntrega(idPedido, nuevoEstado) {
 async function completarEntrega(idPedido, idRepartidor) {
   await actualizarEstadoEntrega(idPedido, "Entregado");
   await actualizarDisponibilidadRepartidor(idRepartidor, "Disponible");
-  console.log(`✅ Pedido ${idPedido} entregado. ${idRepartidor} disponible de nuevo.`);
+  console.log("Pedido " + idPedido + " entregado. " + idRepartidor + " disponible de nuevo.");
 }
 
 // =====================
@@ -362,7 +351,7 @@ async function obtenerCalificacionesPorPlato(nombrePlato) {
 
 async function registrarCalificacion(nombreCliente, nombrePlato, calificacion, comentario) {
   if (calificacion < 1 || calificacion > 5) {
-    alert("La calificación debe ser entre 1 y 5.");
+    alert("La calificacion debe ser entre 1 y 5.");
     return null;
   }
 
@@ -381,7 +370,7 @@ async function registrarCalificacion(nombreCliente, nombrePlato, calificacion, c
     body: JSON.stringify({ data: [nuevaCalificacion] })
   });
 
-  console.log(`⭐ Calificación registrada: ${nombrePlato} - ${calificacion}/5`);
+  console.log("Calificacion registrada: " + nombrePlato + " - " + calificacion + "/5");
   return await res.json();
 }
 
@@ -404,7 +393,7 @@ async function obtenerPromedioPlato(nombrePlato) {
 
 function generarFacturaDigital(pedido) {
   if (typeof window.jspdf === 'undefined') {
-    alert("Error: jsPDF no está cargado. Agregá el script en el HTML.");
+    alert("Error: jsPDF no esta cargado. Agrega el script en el HTML.");
     return null;
   }
 
@@ -433,9 +422,9 @@ function generarFacturaDigital(pedido) {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`N° Factura: ${numFactura}`, 20, 55);
-  doc.text(`Fecha: ${fechaActual}`, 20, 62);
-  doc.text(`Hora: ${horaActual}`, 20, 69);
+  doc.text("N Factura: " + numFactura, 20, 55);
+  doc.text("Fecha: " + fechaActual, 20, 62);
+  doc.text("Hora: " + horaActual, 20, 69);
 
   doc.setDrawColor(200, 200, 200);
   doc.line(20, 75, 190, 75);
@@ -446,8 +435,8 @@ function generarFacturaDigital(pedido) {
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Cliente: ${pedido.Nombre_Cliente || "N/A"}`, 20, 93);
-  doc.text(`ID Pedido: ${pedido.ID_Pedido || "N/A"}`, 20, 100);
+  doc.text("Cliente: " + (pedido.Nombre_Cliente || "N/A"), 20, 93);
+  doc.text("ID Pedido: " + (pedido.ID_Pedido || "N/A"), 20, 100);
 
   doc.line(20, 106, 190, 106);
 
@@ -466,19 +455,19 @@ function generarFacturaDigital(pedido) {
   doc.setFont("helvetica", "normal");
   doc.text(pedido.Nombre_Plato || "N/A", 20, 137);
   doc.text("1", 110, 137);
-  doc.text(`Bs ${pedido.Precio || 0}`, 160, 137);
+  doc.text("Bs " + (pedido.Precio || 0), 160, 137);
 
   doc.line(20, 142, 190, 142);
 
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(`TOTAL: Bs ${pedido.Precio || 0}`, 160, 155, { align: "right" });
+  doc.text("TOTAL: Bs " + (pedido.Precio || 0), 160, 155, { align: "right" });
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Estado de entrega: ${pedido.Estado_Entrega || "Pendiente"}`, 20, 170);
-  doc.text(`Distancia: ${pedido.Distancia_KM || "N/A"} km`, 20, 177);
-  doc.text(`Tiempo estimado: ${pedido.Tiempo_Estimado_Min || "N/A"} min`, 20, 184);
+  doc.text("Estado de entrega: " + (pedido.Estado_Entrega || "Pendiente"), 20, 170);
+  doc.text("Distancia: " + (pedido.Distancia_KM || "N/A") + " km", 20, 177);
+  doc.text("Tiempo estimado: " + (pedido.Tiempo_Estimado_Min || "N/A") + " min", 20, 184);
 
   doc.setDrawColor(46, 125, 50);
   doc.line(20, 260, 190, 260);
@@ -487,12 +476,12 @@ function generarFacturaDigital(pedido) {
   doc.setTextColor(100, 100, 100);
   doc.text("Pica Pica Delivery - Comida casera ultra local", 105, 268, { align: "center" });
   doc.text("Santa Cruz, Bolivia | picapicadelivery@gmail.com", 105, 274, { align: "center" });
-  doc.text("Este documento es una factura digital generada automáticamente.", 105, 280, { align: "center" });
+  doc.text("Este documento es una factura digital generada automaticamente.", 105, 280, { align: "center" });
 
-  const nombreArchivo = `Factura_${pedido.Nombre_Cliente || "cliente"}_${pedido.ID_Pedido || "pedido"}.pdf`;
+  const nombreArchivo = "Factura_" + (pedido.Nombre_Cliente || "cliente") + "_" + (pedido.ID_Pedido || "pedido") + ".pdf";
   doc.save(nombreArchivo);
 
-  console.log(`📄 Factura generada: ${nombreArchivo}`);
+  console.log("Factura generada: " + nombreArchivo);
   return doc;
 }
 
@@ -502,12 +491,12 @@ async function generarFacturaPorID(idPedido) {
     const pedido = pedidos.find(p => String(p.ID_Pedido) === String(idPedido));
 
     if (!pedido) {
-      alert("No se encontró el pedido con ese ID.");
+      alert("No se encontro el pedido con ese ID.");
       return;
     }
 
     generarFacturaDigital(pedido);
-    alert(`✅ Factura generada para el pedido ${idPedido}`);
+    alert("Factura generada para el pedido " + idPedido);
   } catch (error) {
     console.error("Error al generar factura:", error);
     alert("Error al generar la factura.");
@@ -516,12 +505,15 @@ async function generarFacturaPorID(idPedido) {
 
 // =============================================
 // HU15: Enviar Factura por Email (EmailJS)
+// Service ID: service_edz6dkr
+// Template ID: template_bbnqs2d
+// Public Key: krpWacbjY0J_94gjL (inicializado en el HTML)
 // =============================================
 
 async function enviarEmailFactura(emailDestino, pedido) {
   try {
     if (typeof emailjs === 'undefined') {
-      console.warn("EmailJS no está configurado. La factura se descargó pero no se envió por correo.");
+      console.warn("EmailJS no esta configurado.");
       return null;
     }
 
@@ -535,14 +527,14 @@ async function enviarEmailFactura(emailDestino, pedido) {
       estado: pedido.Estado_Entrega || "Pendiente"
     };
 
-    const resultado = await emailjs.send("service_picapica", "template_factura", parametros);
+    const resultado = await emailjs.send("service_edz6dkr", "template_bbnqs2d", parametros);
 
-    console.log(`📧 Email enviado a ${emailDestino}`);
-    alert(`✅ Factura enviada a ${emailDestino}`);
+    console.log("Email enviado a " + emailDestino);
+    alert("Factura enviada a " + emailDestino);
     return resultado;
   } catch (error) {
     console.error("Error al enviar email:", error);
-    alert("❌ No se pudo enviar el email. La factura se descargó localmente.");
+    alert("No se pudo enviar el email. La factura se descargo localmente.");
     return null;
   }
 }
@@ -553,7 +545,7 @@ async function facturarYEnviar(idPedido, emailDestino) {
     const pedido = pedidos.find(p => String(p.ID_Pedido) === String(idPedido));
 
     if (!pedido) {
-      alert("No se encontró el pedido.");
+      alert("No se encontro el pedido.");
       return;
     }
 
@@ -563,9 +555,9 @@ async function facturarYEnviar(idPedido, emailDestino) {
       await enviarEmailFactura(emailDestino, pedido);
     }
 
-    console.log(`✅ Pedido ${idPedido} facturado y enviado.`);
+    console.log("Pedido " + idPedido + " facturado y enviado.");
   } catch (error) {
-    console.error("Error en facturación:", error);
+    console.error("Error en facturacion:", error);
   }
 }
 
@@ -573,8 +565,6 @@ async function facturarYEnviar(idPedido, emailDestino) {
 // HU14: Generar Reportes de Pagos y Suscripciones
 // =============================================
 
-// --- 1. Obtener lista de pagos por fecha ---
-// Filtra pedidos entre dos fechas (formato YYYY-MM-DD)
 async function obtenerPagosPorFecha(fechaInicio, fechaFin) {
   try {
     const pedidos = await obtenerPedidos();
@@ -585,10 +575,8 @@ async function obtenerPagosPorFecha(fechaInicio, fechaFin) {
       return fecha >= fechaInicio && fecha <= fechaFin;
     });
 
-    // Ordenar por fecha
     filtrados.sort((a, b) => (a.Fecha || "").localeCompare(b.Fecha || ""));
-
-    console.log(`📊 ${filtrados.length} pagos encontrados entre ${fechaInicio} y ${fechaFin}`);
+    console.log(filtrados.length + " pagos encontrados entre " + fechaInicio + " y " + fechaFin);
     return filtrados;
   } catch (error) {
     console.error("Error al obtener pagos:", error);
@@ -596,14 +584,11 @@ async function obtenerPagosPorFecha(fechaInicio, fechaFin) {
   }
 }
 
-// Obtener pagos de hoy
 async function obtenerPagosHoy() {
   const hoy = new Date().toISOString().slice(0, 10);
   return await obtenerPagosPorFecha(hoy, hoy);
 }
 
-// --- 2. Calcular totales por semana ---
-// Agrupa pedidos por semana y suma los precios
 async function obtenerTotalesPorSemana(fechaInicio, fechaFin) {
   try {
     const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
@@ -611,11 +596,10 @@ async function obtenerTotalesPorSemana(fechaInicio, fechaFin) {
 
     pedidos.forEach(p => {
       const fecha = new Date(p.Fecha);
-      // Calcular número de semana del año
       const inicioAnio = new Date(fecha.getFullYear(), 0, 1);
       const dias = Math.floor((fecha - inicioAnio) / (24 * 60 * 60 * 1000));
       const numSemana = Math.ceil((dias + inicioAnio.getDay() + 1) / 7);
-      const claveSemana = `Semana ${numSemana} (${fecha.getFullYear()})`;
+      const claveSemana = "Semana " + numSemana + " (" + fecha.getFullYear() + ")";
 
       if (!semanas[claveSemana]) {
         semanas[claveSemana] = {
@@ -632,7 +616,7 @@ async function obtenerTotalesPorSemana(fechaInicio, fechaFin) {
     });
 
     const resultado = Object.values(semanas);
-    console.log("📊 Totales por semana:", resultado);
+    console.log("Totales por semana:", resultado);
     return resultado;
   } catch (error) {
     console.error("Error al calcular totales:", error);
@@ -640,13 +624,11 @@ async function obtenerTotalesPorSemana(fechaInicio, fechaFin) {
   }
 }
 
-// --- 3. Reporte completo (pagos + suscripciones) ---
 async function generarReporteCompleto(fechaInicio, fechaFin) {
   try {
     const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
     const suscripciones = await obtenerSuscripciones();
 
-    // Filtrar suscripciones por rango de fecha
     const subsFiltradas = suscripciones.filter(s => {
       const fecha = s.Fecha || "";
       return fecha >= fechaInicio && fecha <= fechaFin;
@@ -658,7 +640,7 @@ async function generarReporteCompleto(fechaInicio, fechaFin) {
     const susPausadas = subsFiltradas.filter(s => s.Estado_Suscripcion === "Pausado").length;
 
     const reporte = {
-      periodo: `${fechaInicio} a ${fechaFin}`,
+      periodo: fechaInicio + " a " + fechaFin,
       pedidos: {
         total: pedidos.length,
         ingresos: totalIngresosPedidos,
@@ -672,7 +654,7 @@ async function generarReporteCompleto(fechaInicio, fechaFin) {
       }
     };
 
-    console.log("📊 Reporte completo:", reporte);
+    console.log("Reporte completo:", reporte);
     return reporte;
   } catch (error) {
     console.error("Error al generar reporte:", error);
@@ -680,7 +662,6 @@ async function generarReporteCompleto(fechaInicio, fechaFin) {
   }
 }
 
-// --- 4. Exportar reporte a CSV (Excel) ---
 async function exportarReporteExcel(fechaInicio, fechaFin) {
   try {
     const pedidos = await obtenerPagosPorFecha(fechaInicio, fechaFin);
@@ -690,46 +671,41 @@ async function exportarReporteExcel(fechaInicio, fechaFin) {
       return;
     }
 
-    // Encabezados del CSV
     const encabezados = ["ID_Pedido", "Nombre_Cliente", "Nombre_Plato", "Precio", "Fecha", "Estado", "Estado_Entrega", "ID_Repartidor"];
     
-    // Filas de datos
     const filas = pedidos.map(p => 
-      encabezados.map(campo => `"${(p[campo] || '').toString().replace(/"/g, '""')}"`)
+      encabezados.map(campo => '"' + (p[campo] || '').toString().replace(/"/g, '""') + '"')
       .join(",")
     );
 
-    // Fila de totales
     const totalIngresos = pedidos.reduce((sum, p) => sum + (parseFloat(p.Precio) || 0), 0);
-    filas.push(`"","","TOTAL","${totalIngresos}","","","",""`);
+    filas.push('"","","TOTAL","' + totalIngresos + '","","","",""');
 
     const csv = [encabezados.join(","), ...filas].join("\n");
 
-    // Descargar archivo
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.setAttribute("download", `Reporte_Pagos_${fechaInicio}_a_${fechaFin}.csv`);
+    enlace.setAttribute("download", "Reporte_Pagos_" + fechaInicio + "_a_" + fechaFin + ".csv");
     enlace.style.display = "none";
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
     URL.revokeObjectURL(url);
 
-    console.log(`📥 CSV exportado: ${pedidos.length} pedidos`);
-    alert(`✅ Reporte exportado: ${pedidos.length} pedidos entre ${fechaInicio} y ${fechaFin}`);
+    console.log("CSV exportado: " + pedidos.length + " pedidos");
+    alert("Reporte exportado: " + pedidos.length + " pedidos entre " + fechaInicio + " y " + fechaFin);
   } catch (error) {
     console.error("Error al exportar CSV:", error);
     alert("Error al exportar el reporte.");
   }
 }
 
-// --- 5. Exportar reporte a PDF ---
 async function exportarReportePDF(fechaInicio, fechaFin) {
   try {
     if (typeof window.jspdf === 'undefined') {
-      alert("Error: jsPDF no está cargado.");
+      alert("Error: jsPDF no esta cargado.");
       return;
     }
 
@@ -744,7 +720,6 @@ async function exportarReportePDF(fechaInicio, fechaFin) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // --- Encabezado ---
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
     doc.text("PICA PICA DELIVERY", 105, 18, { align: "center" });
@@ -757,18 +732,16 @@ async function exportarReportePDF(fechaInicio, fechaFin) {
     doc.setLineWidth(1);
     doc.line(20, 30, 190, 30);
 
-    // --- Info del reporte ---
     doc.setFontSize(10);
-    doc.text(`Periodo: ${fechaInicio} a ${fechaFin}`, 20, 40);
-    doc.text(`Fecha de generación: ${new Date().toLocaleDateString("es-BO")}`, 20, 47);
-    doc.text(`Total de pedidos: ${pedidos.length}`, 20, 54);
+    doc.text("Periodo: " + fechaInicio + " a " + fechaFin, 20, 40);
+    doc.text("Fecha de generacion: " + new Date().toLocaleDateString("es-BO"), 20, 47);
+    doc.text("Total de pedidos: " + pedidos.length, 20, 54);
 
     const totalIngresos = pedidos.reduce((sum, p) => sum + (parseFloat(p.Precio) || 0), 0);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text(`INGRESOS TOTALES: Bs ${totalIngresos.toFixed(2)}`, 20, 67);
+    doc.text("INGRESOS TOTALES: Bs " + totalIngresos.toFixed(2), 20, 67);
 
-    // --- Totales por semana ---
     doc.setDrawColor(200, 200, 200);
     doc.line(20, 73, 190, 73);
 
@@ -793,11 +766,10 @@ async function exportarReportePDF(fechaInicio, fechaFin) {
       }
       doc.text(s.semana, 20, yPos);
       doc.text(String(s.totalPedidos), 100, yPos);
-      doc.text(`Bs ${s.totalIngresos.toFixed(2)}`, 150, yPos);
+      doc.text("Bs " + s.totalIngresos.toFixed(2), 150, yPos);
       yPos += 7;
     });
 
-    // --- Detalle de pedidos ---
     yPos += 5;
     if (yPos > 250) {
       doc.addPage();
@@ -832,66 +804,33 @@ async function exportarReportePDF(fechaInicio, fechaFin) {
       doc.text(p.Fecha || "", 20, yPos);
       doc.text((p.Nombre_Cliente || "").substring(0, 18), 50, yPos);
       doc.text((p.Nombre_Plato || "").substring(0, 20), 95, yPos);
-      doc.text(`Bs ${p.Precio || 0}`, 145, yPos);
+      doc.text("Bs " + (p.Precio || 0), 145, yPos);
       doc.text((p.Estado_Entrega || "Pendiente").substring(0, 12), 170, yPos);
       yPos += 6;
     });
 
-    // --- Pie de página ---
-    doc.setDrawColor(46, 125, 50);
     const ultimaPagina = doc.internal.getNumberOfPages();
     for (let i = 1; i <= ultimaPagina; i++) {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(100, 100, 100);
-      doc.text("Pica Pica Delivery - Reporte generado automáticamente", 105, 290, { align: "center" });
-      doc.text(`Página ${i} de ${ultimaPagina}`, 190, 290, { align: "right" });
+      doc.text("Pica Pica Delivery - Reporte generado automaticamente", 105, 290, { align: "center" });
+      doc.text("Pagina " + i + " de " + ultimaPagina, 190, 290, { align: "right" });
     }
 
-    const nombreArchivo = `Reporte_Pagos_${fechaInicio}_a_${fechaFin}.pdf`;
+    const nombreArchivo = "Reporte_Pagos_" + fechaInicio + "_a_" + fechaFin + ".pdf";
     doc.save(nombreArchivo);
 
-    console.log(`📄 Reporte PDF generado: ${nombreArchivo}`);
-    alert(`✅ Reporte PDF generado: ${pedidos.length} pedidos`);
+    console.log("Reporte PDF generado: " + nombreArchivo);
+    alert("Reporte PDF generado: " + pedidos.length + " pedidos");
   } catch (error) {
     console.error("Error al generar reporte PDF:", error);
     alert("Error al generar el reporte PDF.");
   }
 }
 
-
 // =====================
-// EJEMPLO DE USO - GUÍA PARA EL FRONTEND
-// =====================
-//
-// // HU2 - Pausar/reanudar suscripción:
-// toggleSuscripcion("Virgilio");
-//
-// // HU4 - Asignar repartidor automático:
-// const info = await asignarRepartidorAutomatico("P123456", 2.5);
-//
-// // HU6 - Calcular tiempo:
-// calcularTiempoEstimado(2.5);          // → 25 min (bici)
-// calcularTiempoEstimado(2.5, "Moto");  // → 20 min (moto)
-//
-// // HU11 - Calificar un almuerzo:
-// registrarCalificacion("Juan", "Majadito", 5, "Excelente sabor");
-//
-// // HU14 - Reportes:
-// obtenerPagosPorFecha("2026-05-01", "2026-05-31");    // Lista de pagos
-// obtenerTotalesPorSemana("2026-05-01", "2026-05-31"); // Totales por semana
-// exportarReporteExcel("2026-05-01", "2026-05-31");    // Descargar CSV
-// exportarReportePDF("2026-05-01", "2026-05-31");      // Descargar PDF
-// generarReporteCompleto("2026-05-01", "2026-05-31");  // Reporte con suscripciones
-//
-// // HU15 - Factura digital:
-// generarFacturaPorID("P123456");
-// facturarYEnviar("P123456", "cliente@gmail.com");
-//
-
-
-// =====================
-// INTERFAZ - MENÚ Y TARJETAS
+// INTERFAZ - MENU Y TARJETAS
 // =====================
 
 const menuContainer = document.getElementById('menu-container');
@@ -902,7 +841,6 @@ const subscriptionFeedback = document.getElementById('subscription-feedback');
 
 function crearTarjetaPlato(plato) {
   const linkImagen = plato.Imagen_Url; 
-  console.log("Cargando imagen para:", plato.Nombre, "URL:", linkImagen);
 
   const imageUrl = (linkImagen && linkImagen.trim() !== "")
     ? linkImagen
@@ -941,7 +879,7 @@ function renderMenu(platos) {
 function renderCategoryButtons(platos) {
   if (!categoryButtonsContainer) return;
 
-  const categorias = Array.from(new Set(platos.map(plato => plato.Categoria || 'Sin categoría')));
+  const categorias = Array.from(new Set(platos.map(plato => plato.Categoria || 'Sin categoria')));
   const botones = ['Todos', ...categorias];
 
   categoryButtonsContainer.innerHTML = botones.map(nombre => {
@@ -986,7 +924,7 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
     }
 
     const ahora = new Date();
-    const horaActual = `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+    const horaActual = String(ahora.getHours()).padStart(2, '0') + ":" + String(ahora.getMinutes()).padStart(2, '0');
 
     const distanciaAleatoria = (Math.random() * 5 + 1).toFixed(1);
     const tiempoEstimado = calcularTiempoEstimado(parseFloat(distanciaAleatoria));
@@ -1007,22 +945,19 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
     };
 
     try {
-        console.log("📦 Procesando pedido:", nuevoPedido);
+        console.log("Procesando pedido:", nuevoPedido);
         await crearPedido(nuevoPedido);
-        alert(`✅ ¡Pedido realizado!\n${nombrePlato}\nPrecio: Bs ${precioFinal}\nTiempo estimado: ${tiempoEstimado} min`);
+        alert("Pedido realizado!\n" + nombrePlato + "\nPrecio: Bs " + precioFinal + "\nTiempo estimado: " + tiempoEstimado + " min");
         
         if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
         if(typeof renderTracking === 'function') renderTracking();
         
         if(typeof dispararNotificacion === 'function') {
-            dispararNotificacion(
-                "🎉 ¡Pedido Confirmado!",
-                `${nombreCliente} ordenó: ${nombrePlato}`
-            );
+            dispararNotificacion("Pedido Confirmado", nombreCliente + " ordeno: " + nombrePlato);
         }
     } catch (error) {
         console.error("Error al procesar el pedido:", error);
-        alert("❌ Hubo un error al procesar el pedido. Intenta de nuevo.");
+        alert("Hubo un error al procesar el pedido. Intenta de nuevo.");
     }
 }
 
@@ -1037,13 +972,13 @@ async function iniciarPagina() {
   try {
     const platos = await obtenerMenu();
     window.menuData = Array.isArray(platos) ? platos : [];
-    console.log("📋 Menú cargado:", window.menuData);
+    console.log("Menu cargado:", window.menuData);
     renderCategoryButtons(window.menuData);
     renderMenu(window.menuData);
   } catch (error) {
-    console.error('Error cargando el menú:', error);
+    console.error('Error cargando el menu:', error);
     if (menuContainer) {
-      menuContainer.innerHTML = '<p class="text-muted">No se pudo cargar el menú. Intenta recargar la página.</p>';
+      menuContainer.innerHTML = '<p class="text-muted">No se pudo cargar el menu. Intenta recargar la pagina.</p>';
     }
   }
 }
@@ -1058,7 +993,7 @@ if (subscriptionForm) {
       return;
     }
 
-    mostrarFeedback('Registrando tu suscripción...');
+    mostrarFeedback('Registrando tu suscripcion...');
 
     try {
       await registrarSuscripcion({
@@ -1067,11 +1002,11 @@ if (subscriptionForm) {
         Fecha: new Date().toISOString().slice(0, 10)
       });
 
-      mostrarFeedback(`¡Gracias ${nombre}! Tu plan semanal fue confirmado.`);
+      mostrarFeedback("Gracias " + nombre + "! Tu plan semanal fue confirmado.");
       subscriptionForm.reset();
     } catch (error) {
-      console.error('Error registrando suscripción:', error);
-      mostrarFeedback('No se pudo registrar la suscripción. Intenta nuevamente.', true);
+      console.error('Error registrando suscripcion:', error);
+      mostrarFeedback('No se pudo registrar la suscripcion. Intenta nuevamente.', true);
     }
   });
 }
@@ -1079,7 +1014,7 @@ if (subscriptionForm) {
 window.addEventListener('DOMContentLoaded', iniciarPagina);
 
 // ============================================
-// LÓGICA PARA AÑADIR PLATOS (ADMIN)
+// LOGICA PARA AÑADIR PLATOS (ADMIN)
 // ============================================
 
 const addDishForm = document.getElementById('add-dish-form');
@@ -1098,21 +1033,21 @@ if (addDishForm) {
             Descripcion: document.getElementById('dish-desc').value.trim()
         };
 
-        dishFeedback.textContent = "Subiendo plato al menú...";
+        dishFeedback.textContent = "Subiendo plato al menu...";
         dishFeedback.style.color = "var(--color-primary)";
 
         try {
             const resultado = await agregarPlato(nuevoPlato);
 
             if (resultado) {
-                dishFeedback.textContent = "✅ ¡Plato añadido con éxito!";
+                dishFeedback.textContent = "Plato añadido con exito!";
                 dishFeedback.style.color = "var(--color-primary-dark)";
                 addDishForm.reset();
                 if (typeof iniciarPagina === 'function') iniciarPagina();
             }
         } catch (error) {
             console.error("Error al añadir plato:", error);
-            dishFeedback.textContent = "❌ Error al conectar con la base de datos.";
+            dishFeedback.textContent = "Error al conectar con la base de datos.";
             dishFeedback.style.color = "#d64541";
         }
     });
@@ -1156,8 +1091,8 @@ async function revisarNuevosPedidosAutomatizado() {
             const nuevoPedido = pedidosHoy[pedidosHoy.length - 1];
             
             dispararNotificacion(
-                `🔔 ¡Nuevo Pedido Recibido!`,
-                `${nuevoPedido.Nombre_Cliente || 'Un vecino'} solicitó: ${nuevoPedido.Nombre_Plato || 'Almuerzo'}`
+                "Nuevo Pedido Recibido",
+                (nuevoPedido.Nombre_Cliente || 'Un vecino') + " solicito: " + (nuevoPedido.Nombre_Plato || 'Almuerzo')
             );
 
             if (typeof cargarResumenPedidos === 'function') {
@@ -1179,7 +1114,7 @@ async function revisarNuevosPedidosAutomatizado() {
 function formatearDuracion(minutos) {
     if (!minutos || isNaN(minutos)) return "0 min";
     const m = Math.round(minutos);
-    return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`;
+    return m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + " min";
 }
 
 function formatHora(hora) {
@@ -1198,7 +1133,7 @@ function obtenerHoraEstimacion(minutos) {
 }
 
 async function reportarRetraso(idPedido) {
-    if(!confirm("¿Confirmar reporte de retraso para el pedido " + idPedido + "?")) return;
+    if(!confirm("Confirmar reporte de retraso para el pedido " + idPedido + "?")) return;
     await actualizarEstadoEntrega(idPedido, "Retrasado");
     alert("Reportado como retrasado.");
     if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();

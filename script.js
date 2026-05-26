@@ -1407,3 +1407,53 @@ async function confirmarCalificacion() {
     btn.textContent = 'Confirmar';
   }
 }
+
+// =============================================
+// ADMIN: Sección de valoraciones recibidas
+// =============================================
+
+async function cargarValoracionesAdmin() {
+  const contenedor = document.getElementById('lista-valoraciones');
+  if (!contenedor) return;
+
+  try {
+    const calificaciones = await obtenerCalificaciones();
+
+    if (!calificaciones || calificaciones.length === 0) {
+      contenedor.innerHTML = '<p class="text-muted">Aún no hay valoraciones registradas.</p>';
+      return;
+    }
+
+    // Ordenar por más recientes primero
+    const ordenadas = calificaciones.sort((a, b) => b.ID_Calificacion.localeCompare(a.ID_Calificacion));
+
+    const textoEstrellas = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
+
+    contenedor.innerHTML = ordenadas.map(function(c) {
+      const stars = crearEstrellasHTML(c.Calificacion);
+      const etiqueta = textoEstrellas[parseInt(c.Calificacion)] || '';
+      return `
+        <div style="border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+            <div>
+              <p style="font-weight:600; color:var(--color-text-heading); margin:0 0 2px;">${c.Nombre_Plato}</p>
+              <p style="font-size:0.82rem; color:var(--color-text-muted); margin:0;">por ${c.Nombre_Cliente} · ${c.Fecha || ''}</p>
+            </div>
+            <span style="font-size:0.8rem; font-weight:600; color:var(--color-action); background:var(--color-action-light); padding:4px 10px; border-radius:20px;">${etiqueta}</span>
+          </div>
+          <div style="margin:10px 0 6px;">${stars}</div>
+          ${c.Comentario ? `<p style="font-size:0.875rem; color:var(--color-text-body); margin:0; padding:10px; background:var(--color-bg-page); border-radius:var(--radius-sm);">"${c.Comentario}"</p>` : ''}
+        </div>
+      `;
+    }).join('');
+
+  } catch (error) {
+    console.error('Error cargando valoraciones:', error);
+    contenedor.innerHTML = '<p class="text-muted">No se pudieron cargar las valoraciones.</p>';
+  }
+}
+
+// Ejecutar al cargar si estamos en admin.html
+if (document.getElementById('lista-valoraciones')) {
+  cargarValoracionesAdmin();
+}

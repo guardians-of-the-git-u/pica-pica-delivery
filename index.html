@@ -72,7 +72,7 @@
           <form id="subscription-form" style="display:grid; gap:14px;">
             <label style="display:block; font-weight:600; color:var(--color-text-heading);">
               Nombre del vecino
-              <input id="subscription-name" type="text" placeholder="Ingresa tu nombre" required style="width:100%; margin-top:8px; padding:14px 16px; border:1px solid var(--color-border); border-radius:16px; font-family:inherit; font-size:0.95rem;" />
+              <input id="subscription-name" type="text" placeholder="Ingresa tu nombre" required style="width:100%; margin-top:8px; padding:14px 16px; border:1px solid var(--color-border); border-[...]
             </label>
             <button type="submit" class="btn-primary">Confirmar Plan Semanal</button>
             <p id="subscription-feedback" class="text-muted" style="min-height:1.2rem;"></p>
@@ -152,6 +152,23 @@
         }, {});
       }
 
+      function crearEstrellasHTML(calificacion) {
+        if (!calificacion) return `<div class="star-rating" style="margin-top: 8px;"><div class="star-rating__stars"><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span><span class="star-rating__star">★</span></div><span class="star-rating__count">(Sin valoraciones)</span></div>`;
+        
+        const numCalificacion = parseFloat(calificacion);
+        let estrellas = '';
+        for (let i = 1; i <= 5; i++) {
+          if (i <= Math.floor(numCalificacion)) {
+            estrellas += '<span class="star-rating__star filled">★</span>';
+          } else if (i - 1 < numCalificacion && numCalificacion % 1 !== 0) {
+            estrellas += '<span class="star-rating__star half">★</span>';
+          } else {
+            estrellas += '<span class="star-rating__star">★</span>';
+          }
+        }
+        return `<div class="star-rating" style="margin-top: 8px;"><div class="star-rating__stars">${estrellas}</div><span class="star-rating__count">(${calificacion}/5.0)</span></div>`;
+      }
+
       function construirResumenPedidos(pedidos) {
         if (!pedidos || pedidos.length === 0) {
           return '<p class="text-muted">No hay pedidos para el día de hoy.</p>';
@@ -194,8 +211,10 @@
                           <span>Distancia: ${distancia ? distancia.toFixed(1) + ' km' : 'Pendiente'}</span>
                           ${estaRetrasado ? '<span class="order-card__tag order-card__delay">Retrasado</span>' : ''}
                         </div>
+                        ${crearEstrellasHTML(pedido.Calificacion)}
                         <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
                           <button class="btn-outline btn-small" type="button" onclick="reportarRetraso('${pedido.ID_Pedido}')">Reportar retraso</button>
+                          <button class="btn-action btn-small" type="button" onclick="abrirModalCalificacion('${pedido.Nombre_Cliente}', '${pedido.Nombre_Plato}', '${pedido.ID_Pedido}')">🌟 Calificar</button>
                         </div>
                       </div>
                     `;

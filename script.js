@@ -1086,6 +1086,8 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         if (!nombreCliente) return;
     }
 
+    const emailCliente = prompt("Ingresa tu correo para recibir la factura (opcional, Cancelar para omitir):");
+
     const ahora = new Date();
     const horaActual = String(ahora.getHours()).padStart(2, '0') + ":" + String(ahora.getMinutes()).padStart(2, '0');
 
@@ -1111,7 +1113,10 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         console.log("Procesando pedido:", nuevoPedido);
         await crearPedido(nuevoPedido);
         generarFacturaDigital(nuevoPedido);
-        enviarEmailFactura("juan.escalante@ucb.edu.bo", nuevoPedido);
+        generarFacturaDigital(nuevoPedido);
+        if (emailCliente) {
+            enviarEmailFactura(emailCliente, nuevoPedido);
+        }
         setTimeout(() => {
             const calificar = confirm("¿Deseas calificar tu pedido de " + nombrePlato + "?");
             if (calificar) {

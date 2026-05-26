@@ -839,23 +839,33 @@ const subscriptionForm = document.getElementById('subscription-form');
 const subscriptionNameInput = document.getElementById('subscription-name');
 const subscriptionFeedback = document.getElementById('subscription-feedback');
 
-function crearTarjetaPlato(plato) {
-  const linkImagen = plato.Imagen_Url; 
-
+/*actualizacion de la tarjeta de plato*/
+async function crearTarjetaPlato(plato) {
+  const linkImagen = plato.Imagen_Url;
   const imageUrl = (linkImagen && linkImagen.trim() !== "")
     ? linkImagen
     : 'https://via.placeholder.com/480x280?text=Sin+Imagen';
 
+  // Obtener promedio de calificaciones
+  let estrellaHTML = '';
+  try {
+    const promedio = await obtenerPromedioPlato(plato.Nombre);
+    estrellaHTML = crearEstrellasHTML(promedio > 0 ? promedio : null);
+  } catch(e) {
+    estrellaHTML = crearEstrellasHTML(null);
+  }
+
   return `
     <article class="card">
-      <img class="card__image" 
-           src="${imageUrl}" 
-           alt="${plato.Nombre}" 
+      <img class="card__image"
+           src="${imageUrl}"
+           alt="${plato.Nombre}"
            style="width:100%; height:160px; object-fit:cover;"
            onerror="this.src='https://via.placeholder.com/480x280?text=Error+al+cargar'">
       <div class="card__body">
         <h3 class="card__name">${plato.Nombre}</h3>
         <p class="text-muted">${plato.Categoria || 'General'}</p>
+        ${estrellaHTML}
         <div class="card__footer">
           <span class="card__price">Bs ${window.usuarioLogueado ? "0" : (plato.Precio || '0')}</span>
           <button class="btn-add" onclick="procesarPedidoRapido('${plato.Nombre}', ${plato.Precio}, '${plato.ID || ''}')">
@@ -867,14 +877,20 @@ function crearTarjetaPlato(plato) {
   `;
 }
 
-function renderMenu(platos) {
+
+/*+++++++++++++++*/
+async function renderMenu(platos) {
   if (!menuContainer) return;
   if (!platos || platos.length === 0) {
     menuContainer.innerHTML = '<p class="text-muted">No hay platos disponibles en este momento.</p>';
     return;
   }
-  menuContainer.innerHTML = platos.map(crearTarjetaPlato).join('');
+  const tarjetas = await Promise.all(platos.map(crearTarjetaPlato));
+  menuContainer.innerHTML = tarjetas.join('');
 }
+
+/*=================================*/
+
 
 function renderCategoryButtons(platos) {
   if (!categoryButtonsContainer) return;

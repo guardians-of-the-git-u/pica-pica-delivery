@@ -48,7 +48,6 @@
             </div>
           </div>
 
-          <!-- Límite de Almuerzos Diarios (HU8) -->
           <div id="lunch-availability-container"></div>
 
           <div id="category-buttons" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;"></div>
@@ -82,7 +81,7 @@
           </form>
 
           <div id="account-panel" class="account-panel">
-            <div class="account-panel__row">
+            <div class="account-panel__row" style="margin-bottom:14px;">
               <div class="account-panel__info">
                 <p style="margin:0; font-weight:600;">Mi Cuenta</p>
                 <p id="account-status-value" class="text-muted" style="margin:0;">Ingresa tu nombre para ver tu plan.</p>
@@ -92,6 +91,18 @@
                 <span class="slider"></span>
               </label>
             </div>
+
+            <div class="account-panel__row" style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--color-border); margin-bottom:14px;">
+              <div class="account-panel__info">
+                <p style="margin:0; font-weight:600; font-size:0.95rem;">Recordatorios por Correo (HU12)</p>
+                <p class="text-muted" style="margin:0; font-size:0.85rem;">Recibe notificaciones diarias de tu menú.</p>
+              </div>
+              <label class="toggle-switch" title="Activar/Desactivar Recordatorios">
+                <input id="toggle-reminders" type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
             <div style="margin-top:14px;">
               <label style="display:block; font-weight:600; margin-bottom:8px;">Cambiar plan</label>
               <select id="select-plan" class="account-panel__select">
@@ -116,12 +127,11 @@
       const ordersSummaryContainer = document.getElementById('orders-summary-container');
       const exportSummaryBtn = document.getElementById('export-summary-btn');
       const summaryStatus = document.getElementById('summary-status');
-      let pedidosDiarios = [];
+      let pedidosDiDaily = []; // Adaptado internamente para control
 
       function formatHora(hora) {
         return hora ? hora.toString().padStart(5, '0') : 'Sin hora';
       }
-      
 
       function calcularTiempoEntrega(distanciaKm, velocidadKmH = 25) {
         const distancia = Number(distanciaKm);
@@ -138,7 +148,7 @@
       }
 
       function formatearDuracion(minutos) {
-        if (minutos === undefined || minutos === null || isNaN(minutos)) {
+        if (minutos === undefined || minutes === null || isNaN(minutos)) {
             return 'Por calcular';
         }
         return `${minutos} min`;
@@ -155,7 +165,6 @@
         }, {});
       }
 
-      
       function construirResumenPedidos(pedidos) {
         if (!pedidos || pedidos.length === 0) {
           return '<p class="text-muted">No hay pedidos para el día de hoy.</p>';
@@ -198,7 +207,7 @@
                           <span>Distancia: ${distancia ? distancia.toFixed(1) + ' km' : 'Pendiente'}</span>
                           ${estaRetrasado ? '<span class="order-card__tag order-card__delay">Retrasado</span>' : ''}
                         </div>
-                        ${crearEstrellasHTML(pedido.Calificacion)}
+                        ${typeof crearEstrellasHTML === 'function' ? crearEstrellasHTML(pedido.Calificacion) : ''}
                         <div style="display:flex; justify-content:flex-end; margin-top:12px; gap:10px; flex-wrap:wrap;">
                           <button class="btn-outline btn-small" type="button" onclick="reportarRetraso('${pedido.ID_Pedido}')">Reportar retraso</button>
                           <button class="btn-action btn-small" type="button" onclick="abrirModalCalificacion('${pedido.Nombre_Cliente}', '${pedido.Nombre_Plato}', '${pedido.ID_Pedido}')">🌟 Calificar</button>
@@ -260,7 +269,7 @@
       }
 
       async function actualizarRetrasoPedido(idPedido, minutesRetraso) {
-        const pedidoExistente = pedidosDiarios.find(p => p.ID_Pedido === idPedido || p.ID === idPedido);
+        const pedidoExistente = pedidosDiDaily.find(p => p.ID_Pedido === idPedido || p.ID === idPedido);
         const distancia = Number(pedidoExistente?.Distancia_KM) || 0;
         const tiempoActual = Number(pedidoExistente?.Tiempo_Estimado_Min) || calcularTiempoEntrega(distancia) || 0;
         const nuevoTiempo = tiempoActual + minutesRetraso;
@@ -302,9 +311,9 @@
         summaryStatus.textContent = 'Cargando resumen...';
         try {
           const pedidos = await obtenerPedidos();
-          pedidosDiarios = Array.isArray(pedidos) ? pedidos : [];
+          pedidosDiDaily = Array.isArray(pedidos) ? pedidos : [];
           const today = new Date().toISOString().slice(0, 10);
-          const pedidosHoy = pedidosDiarios.filter(pedido => (pedido.Fecha || '').startsWith(today));
+          const pedidosHoy = pedidosDiDaily.filter(pedido => (pedido.Fecha || '').startsWith(today));
 
           ordersSummaryContainer.innerHTML = construirResumenPedidos(pedidosHoy);
           summaryStatus.textContent = pedidosHoy.length ? 'Pedidos organizados por hora' : 'No hay pedidos registrados para hoy.';
@@ -319,6 +328,7 @@
         const statusValue = document.getElementById('account-status-value');
         const planSelect = document.getElementById('select-plan');
         const togglePause = document.getElementById('toggle-pause-sub');
+        const toggleReminders = document.getElementById('toggle-reminders');
         const accountMessage = document.getElementById('account-message');
 
         if (!statusValue || !planSelect || !togglePause || !accountMessage) return;
@@ -327,6 +337,7 @@
           statusValue.textContent = 'Ingresa tu nombre para ver tu plan.';
           planSelect.disabled = true;
           togglePause.disabled = true;
+          if (toggleReminders) toggleReminders.disabled = true;
           accountMessage.textContent = 'No estás conectado.';
           return;
         }
@@ -335,7 +346,9 @@
         planSelect.disabled = false;
         planSelect.value = window.suscripcionActual.Plan || 'Básico';
         togglePause.disabled = false;
+        if (toggleReminders) toggleReminders.disabled = false;
         togglePause.checked = window.suscripcionActual.Estado_Suscripcion === 'Pausado';
+        
         accountMessage.textContent = window.suscripcionActual.Estado_Suscripcion === 'Pausado'
           ? 'Tu suscripción está pausada. Actívala cuando quieras.'
           : 'Tu suscripción está activa. Disfruta de tus días de plan.';
@@ -349,12 +362,21 @@
           await actualizarEstadoSuscripcion(window.usuarioLogueado, nuevoEstado);
           window.suscripcionActual = { ...window.suscripcionActual, Estado_Suscripcion: nuevoEstado };
           renderCuenta();
-          renderMenu(window.menuData);
+          if (typeof renderMenu === 'function') renderMenu(window.menuData);
           renderTracking();
         } catch (error) {
           console.error('No se pudo cambiar el estado de suscripción:', error);
           alert('Error al actualizar la suscripción. Intenta nuevamente.');
         }
+      }
+
+      // HU12: Manejador para el cambio del switch de recordatorios
+      async function handleToggleRecordatorios() {
+        const quiereRecordatorios = document.getElementById('toggle-reminders').checked;
+        console.log(`Preferencia HU12 del vecino cambiada: Recordatorios -> ${quiereRecordatorios}`);
+        
+        // Aquí puedes ejecutar un fetch para guardar la preferencia del usuario en tu SheetDB si lo requieres.
+        // Ej: await actualizarRecordatoriosUsuario(window.usuarioLogueado, quiereRecordatorios);
       }
 
       async function handleCambiarPlan() {
@@ -374,7 +396,7 @@
 
       function getPedidoActivo() {
         const today = new Date().toISOString().slice(0, 10);
-        const pedidosHoy = pedidosDiarios.filter(pedido =>
+        const pedidosHoy = pedidosDiDaily.filter(pedido =>
           pedido.Nombre_Cliente?.toLowerCase() === window.usuarioLogueado?.toLowerCase() &&
           (pedido.Fecha || '').startsWith(today)
         );
@@ -415,125 +437,123 @@
 
       if (exportSummaryBtn) {
         exportSummaryBtn.addEventListener('click', () => {
-          if (!pedidosDiarios || pedidosDiarios.length === 0) {
+          if (!pedidosDiDaily || pedidosDiDaily.length === 0) {
             alert('No hay pedidos para exportar.');
             return;
           }
 
           const today = new Date().toISOString().slice(0, 10);
-          const pedidosHoy = pedidosDiarios.filter(pedido => (pedido.Fecha || '').startsWith(today));
+          const pedidosHoy = pedidosDiDaily.filter(pedido => (pedido.Fecha || '').startsWith(today));
           const csv = generarCsvPedidos(pedidosHoy);
           descargarCsv(`resumen-pedidos-${today}.csv`, csv);
         });
       }
 
       let calificacionSeleccionada = 0;
-let pedidoCalificando = { cliente: '', plato: '', id: '' };
+      let pedidoCalificando = { cliente: '', plato: '', id: '' };
 
-const textoEstrellas = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
+      const textoEstrellas = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
 
-function abrirModalCalificacion(cliente, plato, id) {
-  calificacionSeleccionada = 0;
-  pedidoCalificando = { cliente, plato, id };
-  document.getElementById('modal-calif-plato').textContent = plato;
-  document.getElementById('modal-calif-comentario').value = '';
-  document.getElementById('modal-calif-texto').textContent = '';
-  actualizarEstrellas(0);
-  const modal = document.getElementById('modal-calificacion');
-  modal.style.display = 'flex';
-}
+      function abrirModalCalificacion(cliente, plato, id) {
+        calificacionSeleccionada = 0;
+        pedidoCalificando = { cliente, plato, id };
+        document.getElementById('modal-calif-plato').textContent = plato;
+        document.getElementById('modal-calif-comentario').value = '';
+        document.getElementById('modal-calif-texto').textContent = '';
+        actualizarEstrellas(0);
+        const modal = document.getElementById('modal-calificacion');
+        modal.style.display = 'flex';
+      }
 
-function cerrarModalCalificacion() {
-  document.getElementById('modal-calificacion').style.display = 'none';
-}
+      function cerrarModalCalificacion() {
+        document.getElementById('modal-calificacion').style.display = 'none';
+      }
 
-function actualizarEstrellas(valor) {
-  const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
-  estrellas.forEach((star, i) => {
-    star.style.color = i < valor ? '#f59e0b' : '#d1d5db';
-  });
-  document.getElementById('modal-calif-texto').textContent = textoEstrellas[valor] || '';
-}
+      function actualizarEstrellas(valor) {
+        const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
+        estrellas.forEach((star, i) => {
+          star.style.color = i < valor ? '#f59e0b' : '#d1d5db';
+        });
+        document.getElementById('modal-calif-texto').textContent = textoEstrellas[valor] || '';
+      }
 
-async function confirmarCalificacion() {
-  if (calificacionSeleccionada === 0) {
-    alert('Selecciona al menos una estrella.');
-    return;
-  }
-  const comentario = document.getElementById('modal-calif-comentario').value.trim();
-  const btn = document.getElementById('btn-confirmar-calif');
-  btn.textContent = 'Guardando...';
-  btn.disabled = true;
-  try {
-    await registrarCalificacion(pedidoCalificando.cliente, pedidoCalificando.plato, calificacionSeleccionada, comentario);
-    cerrarModalCalificacion();
-    cargarResumenPedidos();
-  } catch (e) {
-    alert('Error al guardar la calificacion.');
-  } finally {
-    btn.textContent = 'Confirmar';
-    btn.disabled = false;
-  }
-}
+      async function confirmarCalificacion() {
+        if (calificacionSeleccionada === 0) {
+          alert('Selecciona al menos una estrella.');
+          return;
+        }
+        const comentario = document.getElementById('modal-calif-comentario').value.trim();
+        const btn = document.getElementById('btn-confirmar-calif');
+        btn.textContent = 'Guardando...';
+        btn.disabled = true;
+        try {
+          await registrarCalificacion(pedidoCalificando.cliente, pedidoCalificando.plato, calificacionSeleccionada, comentario);
+          cerrarModalCalificacion();
+          cargarResumenPedidos();
+        } catch (e) {
+          alert('Error al guardar la calificación.');
+        } finally {
+          btn.textContent = 'Confirmar';
+          btn.disabled = false;
+        }
+      }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
-  estrellas.forEach(star => {
-    star.addEventListener('click', () => {
-      calificacionSeleccionada = parseInt(star.dataset.valor);
-      actualizarEstrellas(calificacionSeleccionada);
-    });
-    star.addEventListener('mouseover', () => {
-      actualizarEstrellas(parseInt(star.dataset.valor));
-    });
-    star.addEventListener('mouseout', () => {
-      actualizarEstrellas(calificacionSeleccionada);
-    });
-  });
-});
+      document.addEventListener('DOMContentLoaded', () => {
+        const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
+        estrellas.forEach(star => {
+          star.addEventListener('click', () => {
+            calificacionSeleccionada = parseInt(star.dataset.valor);
+            actualizarEstrellas(calificacionSeleccionada);
+          });
+          star.addEventListener('mouseover', () => {
+            actualizarEstrellas(parseInt(star.dataset.valor));
+          });
+          star.addEventListener('mouseout', () => {
+            actualizarEstrellas(calificacionSeleccionada);
+          });
+        });
+      });
       
       window.addEventListener('DOMContentLoaded', () => {
-         iniciarPagina(); 
+        if (typeof iniciarPagina === 'function') iniciarPagina(); 
         cargarResumenPedidos();
         renderCuenta();
         const togglePause = document.getElementById('toggle-pause-sub');
+        const toggleReminders = document.getElementById('toggle-reminders');
         const planSelect = document.getElementById('select-plan');
         if (togglePause) togglePause.addEventListener('change', handleTogglePausar);
+        if (toggleReminders) toggleReminders.addEventListener('change', handleToggleRecordatorios);
         if (planSelect) planSelect.addEventListener('change', handleCambiarPlan);
       });
     </script>
-<!-- MODAL CALIFICACIÓN -->
-<div id="modal-calificacion" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:16px;">
-  <div style="background:#fff; border-radius:var(--radius-lg); padding:28px 24px; max-width:420px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
-    <h3 style="margin:0 0 4px; color:var(--color-text-heading); font-size:1.2rem;">🌟 Calificar pedido</h3>
-    <p id="modal-calif-plato" style="color:var(--color-text-muted); margin:0 0 20px; font-size:0.9rem;"></p>
 
-    <!-- Estrellas interactivas -->
-    <div style="margin-bottom:20px;">
-      <p style="font-size:0.85rem; color:var(--color-text-body); margin-bottom:10px; font-weight:500;">¿Cómo calificarías este pedido?</p>
-      <div id="modal-estrellas" class="star-rating__stars" style="gap:10px;">
-        <span class="star-rating__star" style="font-size:2rem;" data-valor="1">★</span>
-        <span class="star-rating__star" style="font-size:2rem;" data-valor="2">★</span>
-        <span class="star-rating__star" style="font-size:2rem;" data-valor="3">★</span>
-        <span class="star-rating__star" style="font-size:2rem;" data-valor="4">★</span>
-        <span class="star-rating__star" style="font-size:2rem;" data-valor="5">★</span>
+    <div id="modal-calificacion" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:16px;">
+      <div style="background:#fff; border-radius:var(--radius-lg); padding:28px 24px; max-width:420px; width:100%; box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+        <h3 style="margin:0 0 4px; color:var(--color-text-heading); font-size:1.2rem;">🌟 Calificar pedido</h3>
+        <p id="modal-calif-plato" style="color:var(--color-text-muted); margin:0 0 20px; font-size:0.9rem;"></p>
+
+        <div style="margin-bottom:20px;">
+          <p style="font-size:0.85rem; color:var(--color-text-body); margin-bottom:10px; font-weight:500;">¿Cómo calificarías este pedido?</p>
+          <div id="modal-estrellas" class="star-rating__stars" style="gap:10px;">
+            <span class="star-rating__star" style="font-size:2rem;" data-valor="1">★</span>
+            <span class="star-rating__star" style="font-size:2rem;" data-valor="2">★</span>
+            <span class="star-rating__star" style="font-size:2rem;" data-valor="3">★</span>
+            <span class="star-rating__star" style="font-size:2rem;" data-valor="4">★</span>
+            <span class="star-rating__star" style="font-size:2rem;" data-valor="5">★</span>
+          </div>
+          <p id="modal-calif-texto" style="font-size:0.85rem; color:var(--color-action); margin-top:8px; min-height:20px; font-weight:500;"></p>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <label style="font-size:0.85rem; font-weight:500; color:var(--color-text-body); display:block; margin-bottom:6px;">Comentario (opcional)</label>
+          <textarea id="modal-calif-comentario" rows="3" placeholder="¿Qué te pareció el pedido?" style="width:100%; padding:10px 12px; border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-main); font-size:0.9rem; resize:none; outline:none; color:var(--color-text-body);"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-outline btn-small" type="button" onclick="cerrarModalCalificacion()">Cancelar</button>
+          <button class="btn-action btn-small" type="button" id="btn-confirmar-calif" onclick="confirmarCalificacion()">Confirmar</button>
+        </div>
       </div>
-      <p id="modal-calif-texto" style="font-size:0.85rem; color:var(--color-action); margin-top:8px; min-height:20px; font-weight:500;"></p>
     </div>
-
-    <!-- Comentario -->
-    <div style="margin-bottom:24px;">
-      <label style="font-size:0.85rem; font-weight:500; color:var(--color-text-body); display:block; margin-bottom:6px;">Comentario (opcional)</label>
-      <textarea id="modal-calif-comentario" rows="3" placeholder="¿Qué te pareció el pedido?" style="width:100%; padding:10px 12px; border:1px solid var(--color-border); border-radius:var(--radius-sm); font-family:var(--font-main); font-size:0.9rem; resize:none; outline:none; color:var(--color-text-body);"></textarea>
-    </div>
-
-    <!-- Botones -->
-    <div style="display:flex; gap:10px; justify-content:flex-end;">
-      <button class="btn-outline btn-small" type="button" onclick="cerrarModalCalificacion()">Cancelar</button>
-      <button class="btn-action btn-small" type="button" id="btn-confirmar-calif" onclick="confirmarCalificacion()">Confirmar</button>
-    </div>
-  </div>
-</div>
-    
   </body>
 </html>

@@ -38,8 +38,7 @@
                 <div class="section-header">
                     <h2 class="section-title">Categorías</h2>
                 </div>
-                <div id="category-buttons" class="chip-list">
-                    </div>
+                <div id="category-buttons" class="chip-list"></div>
             </section>
 
             <section class="mb-3">
@@ -47,33 +46,34 @@
                     <h2 class="section-title">Menú de la Caserita</h2>
                     <span class="section-link">Ver todo</span>
                 </div>
-                <div id="menu-container" class="cards-grid">
-                    </div>
+                <div id="menu-container" class="cards-grid"></div>
             </section>
-            <section id="add-dish-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
-    <h2 class="section-title" style="margin-bottom:15px;">Añadir Nuevo Plato</h2>
-    <form id="add-dish-form" style="display:grid; gap:12px;">
-        <input id="dish-name" type="text" placeholder="Nombre del plato (ej. Sopa de Maní)" required 
-               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
-        
-        <input id="dish-category" type="text" placeholder="Categoría (ej. Almuerzo, Postre)" required 
-               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
-        
-        <input id="dish-price" type="number" placeholder="Precio en Bs" required 
-               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
-        
-        <input id="dish-img-url" type="url" placeholder="URL de la foto (https://...)" required 
-               style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
-        
-        <textarea id="dish-desc" placeholder="Descripción breve" rows="2" 
-                  style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;"></textarea>
 
-        <button type="submit" class="btn-primary" style="background-color: var(--color-action);">
-            🚀 Publicar Plato
-        </button>
-        <p id="add-dish-feedback" class="text-muted" style="text-align:center; min-height:1.2rem;"></p>
-    </form>
-</section>
+            <section id="add-dish-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
+                <h2 class="section-title" style="margin-bottom:15px;">Añadir Nuevo Plato</h2>
+                <form id="add-dish-form" style="display:grid; gap:12px;">
+                    <input id="dish-name" type="text" placeholder="Nombre del plato (ej. Sopa de Maní)" required 
+                           style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+                    
+                    <input id="dish-category" type="text" placeholder="Categoría (ej. Almuerzo, Postre)" required 
+                           style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+                    
+                    <input id="dish-price" type="number" placeholder="Precio en Bs" required 
+                           style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+                    
+                    <input id="dish-img-url" type="url" placeholder="URL de la foto (https://...)" required 
+                           style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md);">
+                    
+                    <textarea id="dish-desc" placeholder="Descripción breve" rows="2" 
+                              style="width:100%; padding:12px; border:1px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;"></textarea>
+
+                    <button type="submit" class="btn-primary" style="background-color: var(--color-action);">
+                        🚀 Publicar Plato
+                    </button>
+                    <p id="add-dish-feedback" class="text-muted" style="text-align:center; min-height:1.2rem;"></p>
+                </form>
+            </section>
+
             <section id="lunch-limit-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
                 <h2 class="section-title" style="margin-bottom:10px;">⚙️ Límite de Almuerzos Diarios</h2>
                 <p class="text-muted" style="margin-bottom:15px;">Define la cantidad máxima de almuerzos que puedes preparar y entregar el día de hoy.</p>
@@ -87,7 +87,6 @@
                 </div>
                 <p id="limit-feedback" class="text-muted" style="margin-top:10px; min-height:1.2rem; font-weight:600;"></p>
                 
-                <!-- Live Stats for Admin -->
                 <div id="admin-lunch-stats" style="margin-top:20px; padding:15px; background:var(--color-primary-light); border-radius:var(--radius-md); display:none;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                         <span style="font-weight:600; color:var(--color-primary-dark); font-size:0.875rem;">Almuerzos pedidos hoy:</span>
@@ -98,14 +97,82 @@
                     </div>
                 </div>
             </section>
-            <section id="gestion-logistica" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
-    <h2 class="section-title">Logística y Repartidores</h2>
-    <div id="lista-pedidos-pendientes">
-        <p>Cargando pedidos para asignar...</p>
-    </div>
-</section>
 
-            <section id="subscription-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 80px;">
+            <section id="gestion-logistica" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
+                <h2 class="section-title">Logística y Repartidores</h2>
+                <div id="lista-pedidos-pendientes">
+                    <p>Cargando pedidos para asignar...</p>
+                </div>
+            </section>
+
+            <section id="reportes-pagos-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                    <span style="font-size:1.5rem;">📊</span>
+                    <h2 class="section-title" style="margin:0;">Reporte de Pagos Recibidos (H14)</h2>
+                </div>
+                
+                <div style="display:flex; flex-wrap:wrap; gap:15px; justify-content:space-between; align-items:flex-end; margin-bottom:20px;">
+                    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <div>
+                            <label for="filtro-fecha-desde" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px; color:var(--color-primary-dark);">Desde:</label>
+                            <input id="filtro-fecha-desde" type="date" style="padding:10px; border:1px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;">
+                        </div>
+                        <div>
+                            <label for="filtro-fecha-hasta" style="display:block; font-size:0.85rem; font-weight:600; margin-bottom:4px; color:var(--color-primary-dark);">Hasta:</label>
+                            <input id="filtro-fecha-hasta" type="date" style="padding:10px; border:1px solid var(--color-border); border-radius:var(--radius-md); font-family:inherit;">
+                        </div>
+                        <button id="btn-filtrar-pagos" class="btn-action" style="padding:10px 15px; height:42px; align-self:flex-end; background-color: var(--color-primary); color: white; border: none; border-radius: var(--radius-md); cursor: pointer;">
+                            🔍 Filtrar
+                        </button>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px;">
+                        <button id="btn-exportar-excel" style="padding:10px 16px; background-color: #1D6F42; color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            🟢 Exportar a Excel
+                        </button>
+                        <button id="btn-exportar-pdf" style="padding:10px 16px; background-color: #E03131; color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            🔴 Exportar a PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="background-color: var(--color-primary-light, #f8f9fa); border-bottom: 2px solid var(--color-border);">
+                                <th style="padding: 12px; font-weight: 600;">Fecha</th>
+                                <th style="padding: 12px; font-weight: 600;">Cliente</th>
+                                <th style="padding: 12px; font-weight: 600;">Concepto / Plan</th>
+                                <th style="padding: 12px; font-weight: 600;">Método de Pago</th>
+                                <th style="padding: 12px; font-weight: 600; text-align: right;">Monto (Bs)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pagos-body">
+                            <tr style="border-bottom: 1px solid var(--color-border);">
+                                <td style="padding: 12px;">26/05/2026</td>
+                                <td style="padding: 12px;">Carlos Gómez</td>
+                                <td style="padding: 12px;">Plan Semanal Completo</td>
+                                <td style="padding: 12px;">Transferencia QR</td>
+                                <td style="padding: 12px; text-align: right;">150.00</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--color-border);">
+                                <td style="padding: 12px;">25/05/2026</td>
+                                <td style="padding: 12px;">Ana Suárez</td>
+                                <td style="padding: 12px;">Plan Ejecutivo</td>
+                                <td style="padding: 12px;">Efectivo</td>
+                                <td style="padding: 12px; text-align: right;">180.00</td>
+                            </tr>
+                            
+                            <tr style="background-color: #f1f3f5; font-weight: bold; border-top: 2px solid #dee2e6;">
+                                <td colspan="4" style="padding: 12px; text-align: right; color: var(--color-primary-dark);">Total Semana Actual:</td>
+                                <td id="total-semana-monto" style="padding: 12px; text-align: right; color: var(--color-primary-dark);">330.00 Bs</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="subscription-section" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom: 28px;">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                     <span style="font-size:1.5rem;">📅</span>
                     <h2 class="section-title" style="margin:0;">Suscripción Semanal</h2>
@@ -119,24 +186,21 @@
                     <button type="submit" class="btn-primary">
                         Confirmar Plan Semanal
                     </button>
-                    <p id="subscription-feedback" class="text-muted" style="text-align:center; min-height:1.2rem Papilio;"></p>
+                    <p id="subscription-feedback" class="text-muted" style="text-align:center; min-height:1.2rem;"></p>
                 </form>
             </section>
-        </main>
-/*===================*/
-<!-- SECCIÓN VALORACIONES ADMIN -->
-<section id="seccion-valoraciones" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom:28px;">
-  <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
-    <span style="font-size:1.5rem;">⭐</span>
-    <h2 class="section-title" style="margin:0;">Valoraciones recibidas</h2>
-  </div>
-  <div id="lista-valoraciones">
-    <p class="text-muted">Cargando valoraciones...</p>
-  </div>
-</section>
-        /*===============================================*/
 
-        
+            <section id="seccion-valoraciones" style="background:#fff; padding:20px; border-radius:var(--radius-xl); box-shadow:var(--shadow-card); margin-bottom:80px;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                <span style="font-size:1.5rem;">⭐</span>
+                <h2 class="section-title" style="margin:0;">Valoraciones recibidas</h2>
+              </div>
+              <div id="lista-valoraciones">
+                <p class="text-muted">Cargando valoraciones...</p>
+              </div>
+            </section>
+        </main>
+
         <nav class="nav-bar">
             <a href="index.html" class="nav-item active">
                 <span class="nav-item__icon">🏠</span>
@@ -153,12 +217,11 @@
         </nav>
     </div>
 
-    <script src="script.js">
-    </script>
+    <script src="script.js"></script>
     <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    iniciarPagina();
-  });
-</script>
+        document.addEventListener('DOMContentLoaded', () => {
+            iniciarPagina();
+        });
+    </script>
 </body>
 </html>

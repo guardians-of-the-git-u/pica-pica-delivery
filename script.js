@@ -914,7 +914,132 @@ function mostrarFeedback(mensaje, esError = false) {
   subscriptionFeedback.style.color = esError ? '#d64541' : 'var(--color-text-body)';
 }
 
+// ============================================
+// HU8: LIMITAR ALMUERZOS DIARIOS (LÓGICA)
+// ============================================
+
+window.almuerzosDisponiblesGlobal = 15;
+
+function getDailyLunchLimit() {
+  const limit = localStorage.getItem('pica_pica_daily_lunch_limit');
+  return limit ? parseInt(limit, 10) : 15; // default fallback 15
+}
+
+function setDailyLunchLimit(limit) {
+  localStorage.setItem('pica_pica_daily_lunch_limit', limit);
+}
+
+async function actualizarContadorAlmuerzos() {
+  const limit = getDailyLunchLimit();
+  
+  // Actualizar valor en input de admin
+  const maxLunchesInput = document.getElementById('max-lunches-input');
+  if (maxLunchesInput && !maxLunchesInput.value) {
+    maxLunchesInput.value = limit;
+  }
+
+  try {
+    const pedidos = await obtenerPedidos();
+    const pedidosDiarios = Array.isArray(pedidos) ? pedidos : [];
+    
+    const today = new Date().toISOString().slice(0, 10);
+    const pedidosHoy = pedidosDiarios.filter(p => (p.Fecha || '').startsWith(today));
+    const totalPedidosHoy = pedidosHoy.length;
+    
+    const disponibles = Math.max(0, limit - totalPedidosHoy);
+    window.almuerzosDisponiblesGlobal = disponibles;
+
+    // 1. Cliente (index.html)
+    const clientContainer = document.getElementById('lunch-availability-container');
+    if (clientContainer) {
+      if (disponibles === 0) {
+        clientContainer.innerHTML = `
+          <div class="sold-out-banner">
+            <h3 class="sold-out-banner__title">🚫 Almuerzos Agotados</h3>
+            <p class="sold-out-banner__text">¡Oh no! Los almuerzos de la Caserita se han agotado por hoy. Vuelve mañana para disfrutar de la mejor comida casera.</p>
+          </div>
+        `;
+      } else {
+        const pct = Math.min(100, (totalPedidosHoy / limit) * 100);
+        let badgeClass = 'lunch-counter-card__badge--available';
+        let barClass = '';
+        
+        if (disponibles <= 3) {
+          badgeClass = 'lunch-counter-card__badge--warning';
+          barClass = 'lunch-progress-bar__fill--warning';
+        }
+
+        clientContainer.innerHTML = `
+          <div class="lunch-counter-card">
+            <div class="lunch-counter-card__header">
+              <h3 class="lunch-counter-card__title">🥗 Disponibilidad de almuerzos</h3>
+              <span class="lunch-counter-card__badge ${badgeClass}">
+                ${disponibles} disponible${disponibles === 1 ? '' : 's'}
+              </span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:var(--color-text-muted);">
+              <span>Pedidos hoy: ${totalPedidosHoy}</span>
+              <span>Límite diario: ${limit}</span>
+            </div>
+            <div class="lunch-progress-bar">
+              <div class="lunch-progress-bar__fill ${barClass}" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Habilitar o deshabilitar botones del menú
+      const menuContainer = document.getElementById('menu-container');
+      if (menuContainer) {
+        const addButtons = menuContainer.querySelectorAll('.btn-add');
+        addButtons.forEach(btn => {
+          if (disponibles === 0) {
+            btn.classList.add('disabled');
+            btn.textContent = 'Agotado';
+            btn.disabled = true;
+          } else {
+            btn.classList.remove('disabled');
+            btn.disabled = false;
+            btn.textContent = window.usuarioLogueado ? "Gratis" : "+";
+          }
+        });
+      }
+    }
+
+    // 2. Administrador (admin.html)
+    const adminStats = document.getElementById('admin-lunch-stats');
+    if (adminStats) {
+      adminStats.style.display = 'block';
+      const pct = Math.min(100, (totalPedidosHoy / limit) * 100);
+      
+      const progressText = document.getElementById('admin-lunch-progress-text');
+      if (progressText) {
+        progressText.textContent = `${totalPedidosHoy} / ${limit}`;
+      }
+      
+      const progressBar = document.getElementById('admin-lunch-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = `${pct}%`;
+        if (disponibles === 0) {
+          progressBar.style.backgroundColor = '#c0392b';
+        } else if (disponibles <= 3) {
+          progressBar.style.backgroundColor = 'var(--color-action)';
+        } else {
+          progressBar.style.backgroundColor = 'var(--color-primary)';
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error al actualizar contador de almuerzos:", error);
+  }
+}
+
 async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
+    if (window.almuerzosDisponiblesGlobal !== undefined && window.almuerzosDisponiblesGlobal <= 0) {
+        alert("¡Oh no! Los almuerzos disponibles para hoy se han agotado.");
+        return;
+    }
+
     let nombreCliente = window.usuarioLogueado;
     let precioFinal = window.usuarioLogueado ? 0 : precioOriginal;
 
@@ -963,6 +1088,9 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
             }
         }, 1500);
         
+        // Actualizar contador inmediatamente después de registrar el pedido
+        await actualizarContadorAlmuerzos();
+        
         if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
         if(typeof renderTracking === 'function') renderTracking();
         
@@ -980,9 +1108,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCheck) {
         btnCheck.addEventListener('click', verificarYActivarModo);
     }
+    
+    // Configuración del límite por Caserita (HU8)
+    const saveLimitBtn = document.getElementById('save-limit-btn');
+    if (saveLimitBtn) {
+        saveLimitBtn.addEventListener('click', () => {
+            const input = document.getElementById('max-lunches-input');
+            const feedback = document.getElementById('limit-feedback');
+            if (input && feedback) {
+                const value = parseInt(input.value, 10);
+                if (isNaN(value) || value <= 0) {
+                    feedback.textContent = "Por favor ingresa un número válido mayor a 0.";
+                    feedback.style.color = "#d64541";
+                } else {
+                    setDailyLunchLimit(value);
+                    feedback.textContent = "¡Límite guardado correctamente!";
+                    feedback.style.color = "var(--color-primary-dark)";
+                    actualizarContadorAlmuerzos();
+                }
+            }
+        });
+    }
 });
 
 async function iniciarPagina() {
+  // Cargar disponibilidad de almuerzos en tiempo real (HU8)
+  actualizarContadorAlmuerzos();
+
   try {
     const platos = await obtenerMenu();
     window.menuData = Array.isArray(platos) ? platos : [];
@@ -1089,6 +1241,9 @@ function dispararNotificacion(titulo, texto) {
 let totalPedidosConocidos = -1;
 
 async function revisarNuevosPedidosAutomatizado() {
+    // Sincronizar disponibilidad de almuerzos (HU8)
+    actualizarContadorAlmuerzos();
+
     try {
         const pedidos = await obtenerPedidos();
         const pedidosDiarios = Array.isArray(pedidos) ? pedidos : [];
@@ -1162,8 +1317,8 @@ function agruparPorHora(pedidos) {
     }, {});
 }
 
-// Polling cada 100 segundos
-setInterval(revisarNuevosPedidosAutomatizado, 100000);
+// Polling cada 15 segundos para actualización en tiempo real (HU8)
+setInterval(revisarNuevosPedidosAutomatizado, 15000);
 
 // =============================================
 // MODAL DE CALIFICACIÓN (Star Rating interactivo)

@@ -981,3 +981,126 @@ p {
 .notification-banner__close:hover {
   color: var(--color-text-heading);
 }
+
+/* ============================================
+   SISTEMA DE LÍMITE DE ALMUERZOS (HU8)
+   ============================================ */
+.lunch-counter-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lunch-counter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.lunch-counter-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lunch-counter-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-heading);
+  margin: 0;
+}
+
+.lunch-counter-card__badge {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 20px;
+}
+
+.lunch-counter-card__badge--available {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.lunch-counter-card__badge--warning {
+  background-color: var(--color-action-light);
+  color: var(--color-action-dark);
+}
+
+.lunch-counter-card__badge--empty {
+  background-color: #ffe8e8;
+  color: #c0392b;
+}
+
+.lunch-progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #eee;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lunch-progress-bar__fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+  width: 0%;
+}
+
+.lunch-progress-bar__fill--warning {
+  background-color: var(--color-action);
+}
+
+.lunch-progress-bar__fill--empty {
+  background-color: #c0392b;
+}
+
+.sold-out-banner {
+  background: linear-gradient(135deg, #ffe8e8 0%, #ffdada 100%);
+  border: 1px solid #f5b7b1;
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+  animation: pulseSoldOut 2s infinite ease-in-out;
+}
+
+@keyframes pulseSoldOut {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.sold-out-banner__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #c0392b;
+  margin-bottom: 6px;
+}
+
+.sold-out-banner__text {
+  font-size: 0.85rem;
+  color: #7f231c;
+  margin: 0;
+}
+
+/* Estado deshabilitado para botones */
+.btn-add.disabled,
+.btn-primary.disabled,
+.btn-action.disabled {
+  background-color: #cccccc !important;
+  color: #888888 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}

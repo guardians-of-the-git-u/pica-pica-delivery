@@ -947,7 +947,8 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
     try {
         console.log("Procesando pedido:", nuevoPedido);
         await crearPedido(nuevoPedido);
-        alert("Pedido realizado!\n" + nombrePlato + "\nPrecio: Bs " + precioFinal + "\nTiempo estimado: " + tiempoEstimado + " min");
+        generarFacturaDigital(nuevoPedido);
+        alert("Pedido realizado!\n" + nombrePlato + "\nPrecio: Bs " + precioFinal + "\nTiempo estimado: " + tiempoEstimado + " min\nTu factura se ha descargado automaticamente.");
         
         if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
         if(typeof renderTracking === 'function') renderTracking();

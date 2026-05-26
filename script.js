@@ -949,6 +949,19 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         await crearPedido(nuevoPedido);
         generarFacturaDigital(nuevoPedido);
         enviarEmailFactura("juan.escalante@ucb.edu.bo", nuevoPedido);
+        setTimeout(() => {
+            const calificar = confirm("¿Deseas calificar tu pedido de " + nombrePlato + "?");
+            if (calificar) {
+                const estrellas = prompt("¿Cuantas estrellas le das? (1 a 5):");
+                const numero = parseInt(estrellas);
+                if (numero >= 1 && numero <= 5) {
+                    const comentario = prompt("Deja un comentario (opcional, presiona Cancelar para omitir):");
+                    registrarCalificacion(nombreCliente, nombrePlato, numero, comentario || "");
+                } else {
+                    alert("Calificacion invalida. Debe ser entre 1 y 5.");
+                }
+            }
+        }, 1500);
         
         if(typeof cargarResumenPedidos === 'function') cargarResumenPedidos();
         if(typeof renderTracking === 'function') renderTracking();

@@ -443,6 +443,71 @@
         });
       }
 
+      let calificacionSeleccionada = 0;
+let pedidoCalificando = { cliente: '', plato: '', id: '' };
+
+const textoEstrellas = ['', 'Malo', 'Regular', 'Bueno', 'Muy bueno', 'Excelente'];
+
+function abrirModalCalificacion(cliente, plato, id) {
+  calificacionSeleccionada = 0;
+  pedidoCalificando = { cliente, plato, id };
+  document.getElementById('modal-calif-plato').textContent = plato;
+  document.getElementById('modal-calif-comentario').value = '';
+  document.getElementById('modal-calif-texto').textContent = '';
+  actualizarEstrellas(0);
+  const modal = document.getElementById('modal-calificacion');
+  modal.style.display = 'flex';
+}
+
+function cerrarModalCalificacion() {
+  document.getElementById('modal-calificacion').style.display = 'none';
+}
+
+function actualizarEstrellas(valor) {
+  const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
+  estrellas.forEach((star, i) => {
+    star.style.color = i < valor ? '#f59e0b' : '#d1d5db';
+  });
+  document.getElementById('modal-calif-texto').textContent = textoEstrellas[valor] || '';
+}
+
+async function confirmarCalificacion() {
+  if (calificacionSeleccionada === 0) {
+    alert('Selecciona al menos una estrella.');
+    return;
+  }
+  const comentario = document.getElementById('modal-calif-comentario').value.trim();
+  const btn = document.getElementById('btn-confirmar-calif');
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+  try {
+    await registrarCalificacion(pedidoCalificando.cliente, pedidoCalificando.plato, calificacionSeleccionada, comentario);
+    cerrarModalCalificacion();
+    cargarResumenPedidos();
+  } catch (e) {
+    alert('Error al guardar la calificacion.');
+  } finally {
+    btn.textContent = 'Confirmar';
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const estrellas = document.querySelectorAll('#modal-estrellas .star-rating__star');
+  estrellas.forEach(star => {
+    star.addEventListener('click', () => {
+      calificacionSeleccionada = parseInt(star.dataset.valor);
+      actualizarEstrellas(calificacionSeleccionada);
+    });
+    star.addEventListener('mouseover', () => {
+      actualizarEstrellas(parseInt(star.dataset.valor));
+    });
+    star.addEventListener('mouseout', () => {
+      actualizarEstrellas(calificacionSeleccionada);
+    });
+  });
+});
+      
       window.addEventListener('DOMContentLoaded', () => {
         cargarResumenPedidos();
         renderCuenta();

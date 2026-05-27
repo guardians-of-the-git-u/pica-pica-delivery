@@ -97,7 +97,7 @@ async function eliminarPlato(id) {
 // =====================
 
 async function obtenerPedidos() {
-  const res = await fetch(${API_URL}?sheet=Pedidos);
+  const res = await fetch(`${API_URL}?sheet=Pedidos`);
   const data = await res.json();
   // Limpiar espacios en la fecha de todos los pedidos
   return data.map(p => ({ ...p, Fecha: (p.Fecha || '').trim() }));

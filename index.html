@@ -71,11 +71,15 @@
           <p class="text-muted" style="margin-bottom:18px;">Recibe el plan semanal de comida directo a tu buzón.</p>
 
           <form id="subscription-form" style="display:grid; gap:14px;">
-            <label style="display:block; font-weight:600; color:var(--color-text-heading);">
-              Nombre del vecino
-              <input id="subscription-name" type="text" placeholder="Ingresa tu nombre" required style="width:100%; margin-top:8px; padding:14px 16px; border:1px solid var(--color-border); border-radius: var(--radius-md);">
-            </label>
-            <button type="submit" class="btn-primary">Confirmar Plan Semanal</button>
+    <label style="display:block; font-weight:600; color:var(--color-text-heading);">
+      Nombre del vecino
+      <input id="subscription-name" type="text" placeholder="Ingresa tu nombre" required style="width:100%; margin-top:8px; padding:14px 16px; border:1px solid var(--color-border); border-radius:16px; font-family:inherit; font-size:0.95rem;" />
+    </label>
+    <label style="display:block; font-weight:600; color:var(--color-text-heading);">
+      Correo electrónico (para recibir tu factura)
+      <input id="subscription-email" type="email" placeholder="tucorreo@gmail.com" style="width:100%; margin-top:8px; padding:14px 16px; border:1px solid var(--color-border); border-radius:16px; font-family:inherit; font-size:0.95rem;" />
+    </label>
+    <button type="submit" class="btn-primary">Confirmar Plan Semanal</button>
             <p id="subscription-feedback" class="text-muted" style="min-height:1.2rem;"></p>
           </form>
 

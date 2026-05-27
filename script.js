@@ -1206,13 +1206,16 @@ if (subscriptionForm) {
     mostrarFeedback('Registrando tu suscripcion...');
 
     try {
-      const email = document.getElementById('subscription-email')?.value.trim() || "";
-      window.emailSuscriptor = email;
+      // 1. Aquí capturamos el correo del formulario del HTML
+      const correo = document.getElementById('subscription-email')?.value.trim() || "";
+      window.emailSuscriptor = correo;
+
+      // 2. Aquí lo enviamos con "Email" en MAYÚSCULA para que SheetDB lo entienda
       await registrarSuscripcion({
         Nombre_vecino: nombre,
         Plan: 'Semanal',
         Fecha: new Date().toISOString().slice(0, 10),
-        Email: email
+        Email: correo // ¡La "E" mayúscula aquí es la clave!
       });
 
       mostrarFeedback("Gracias " + nombre + "! Tu plan semanal fue confirmado.");

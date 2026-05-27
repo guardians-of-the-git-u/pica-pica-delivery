@@ -38,6 +38,7 @@ async function verificarYActivarModo() {
 
             window.usuarioLogueado = esSuscriptor.Nombre_vecino;
             window.suscripcionActual = esSuscriptor;
+            window.emailSuscriptor = esSuscriptor.Email || "";
             msg.textContent = "Plan Semanal Activo. Hola " + window.usuarioLogueado + "! Tus platos hoy son gratis.";
             msg.style.color = "var(--color-primary-dark)";
             renderMenu(window.menuData);

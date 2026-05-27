@@ -1205,6 +1205,8 @@ if (subscriptionForm) {
     mostrarFeedback('Registrando tu suscripcion...');
 
     try {
+      const email = document.getElementById('subscription-email')?.value.trim() || "";
+      window.emailSuscriptor = email;
       await registrarSuscripcion({
         Nombre_vecino: nombre,
         Plan: 'Semanal',

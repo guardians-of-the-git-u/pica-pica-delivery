@@ -1100,7 +1100,9 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         Nombre_Cliente: nombreCliente,
         Nombre_Plato: nombrePlato,
         Hora_Entrega: "Por confirmar",
-        Fecha: new Date().toISOString().slice(0, 10),
+        Fecha: new Date().toLocaleDateString("es-BO", {
+    year: "numeric", month: "2-digit", day: "2-digit"
+}).split("/").reverse().join("-"),
         Estado: "Pendiente",
         Precio: precioFinal,
         ID_Repartidor: "",

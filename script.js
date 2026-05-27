@@ -1117,7 +1117,6 @@ async function procesarPedidoRapido(nombrePlato, precioOriginal, idPlato = '') {
         console.log("Procesando pedido:", nuevoPedido);
         await crearPedido(nuevoPedido);
         generarFacturaDigital(nuevoPedido);
-        generarFacturaDigital(nuevoPedido);
         if (emailCliente) {
             enviarEmailFactura(emailCliente, nuevoPedido);
         }

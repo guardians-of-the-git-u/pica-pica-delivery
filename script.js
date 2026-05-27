@@ -1211,7 +1211,8 @@ if (subscriptionForm) {
       await registrarSuscripcion({
         Nombre_vecino: nombre,
         Plan: 'Semanal',
-        Fecha: new Date().toISOString().slice(0, 10)
+        Fecha: new Date().toISOString().slice(0, 10),
+        Email: email
       });
 
       mostrarFeedback("Gracias " + nombre + "! Tu plan semanal fue confirmado.");
